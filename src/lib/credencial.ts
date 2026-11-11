@@ -169,7 +169,7 @@ export async function credencialPng(nome: string) {
 export async function salvarCredencial(nome: string): Promise<{ url: string; como: 'compartilhado' | 'baixado' | 'manual' }> {
   const blob = await credencialPng(nome)
   const url = URL.createObjectURL(blob)
-  const nomeArq = `credencial-missao-${nome.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'agente'}.png`
+  const nomeArq = `credencial-missao-${nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'agente'}.png`
   const arquivo = new File([blob], nomeArq, { type: 'image/png' })
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean }
   const toque = matchMedia('(pointer: coarse)').matches
