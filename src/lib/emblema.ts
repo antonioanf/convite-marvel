@@ -32,14 +32,21 @@ export function emblemaSvg(p: Paleta, o: EmblemaOpts = {}) {
     glow +
     // sombra deslocada (estilo HQ)
     `<path d="${ESCUDO}" transform="translate(4 5)" fill="${p.marinho}"/>` +
+    emblemaG(p) +
+    `</svg>`
+  )
+}
+
+/** Só as formas do emblema (sem <svg> nem sombra), para pôr dentro de outro desenho (peito do herói). */
+export function emblemaG(p: Paleta) {
+  return (
     `<path d="${ESCUDO}" fill="${p.vermelho}" stroke="${p.marinho}" stroke-width="5" stroke-linejoin="round"/>` +
     `<path d="${ESCUDO_INTERNO}" fill="${p.amarelo}" stroke="${p.marinho}" stroke-width="3" stroke-linejoin="round"/>` +
     `<path d="${RAIO}" fill="${p.azul}" stroke="${p.marinho}" stroke-width="2.5" stroke-linejoin="round"/>` +
     `<g fill="${p.branco}" stroke="${p.marinho}" stroke-width="3.2" stroke-linejoin="round" paint-order="stroke">` +
     `<path d="${J}"/><path d="${L}"/></g>` +
     // reflexo
-    `<path d="M15 16 C25 18 36 17 46 12" fill="none" stroke="${p.branco}" stroke-width="3" stroke-linecap="round" opacity=".55"/>` +
-    `</svg>`
+    `<path d="M15 16 C25 18 36 17 46 12" fill="none" stroke="${p.branco}" stroke-width="3" stroke-linecap="round" opacity=".55"/>`
   )
 }
 

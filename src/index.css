@@ -530,3 +530,105 @@
     }
   }
 }
+
+/* ================= Heróis da equipe (animações só com transform/opacity) ================= */
+@layer components {
+  .heroi {
+    display: block;
+    overflow: visible;
+  }
+  .heroi .h-respira {
+    transform-box: view-box;
+    transform-origin: 100px 250px;
+    animation: h-respira 2.8s ease-in-out infinite;
+  }
+  @keyframes h-respira {
+    50% {
+      transform: scale(1.018, 0.982);
+    }
+  }
+  .heroi .h-olhos {
+    transform-box: fill-box;
+    transform-origin: 50% 55%;
+    animation: h-pisca 4.6s ease-in-out infinite;
+    animation-delay: var(--pisca, 0s);
+  }
+  @keyframes h-pisca {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.08);
+    }
+  }
+  .heroi.voa .h-flutua {
+    animation: h-voa 2.4s ease-in-out infinite;
+  }
+  @keyframes h-voa {
+    50% {
+      transform: translateY(-9px);
+    }
+  }
+  .heroi.voa .h-sombra {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: h-sombra 2.4s ease-in-out infinite;
+  }
+  @keyframes h-sombra {
+    50% {
+      transform: scale(0.8);
+      opacity: 0.1;
+    }
+  }
+  .heroi .h-capa {
+    transform-box: view-box;
+    transform-origin: 100px 138px;
+    animation: h-capa 1.6s ease-in-out infinite alternate;
+  }
+  @keyframes h-capa {
+    from {
+      transform: skewX(-3deg) scaleX(0.98);
+    }
+    to {
+      transform: skewX(4deg) scaleX(1.03);
+    }
+  }
+  .heroi .h-chama {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    animation: h-chama 0.14s ease-in-out infinite alternate;
+  }
+  @keyframes h-chama {
+    from {
+      transform: scale(0.88, 0.8);
+    }
+    to {
+      transform: scale(1.06, 1.12);
+    }
+  }
+  .heroi .h-faisca {
+    animation: h-faisca 0.5s steps(2, jump-none) infinite;
+  }
+  @keyframes h-faisca {
+    50% {
+      opacity: 0.55;
+    }
+  }
+  .heroi .h-brilho {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: h-brilho 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes h-brilho {
+    from {
+      transform: scale(0.9) rotate(-8deg);
+      opacity: 0.85;
+    }
+    to {
+      transform: scale(1.08) rotate(8deg);
+      opacity: 1;
+    }
+  }
+}

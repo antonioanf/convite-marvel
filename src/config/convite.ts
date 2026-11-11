@@ -34,8 +34,15 @@ export interface Paleta {
   /** Azul-céu (fundo) */
   ceu: string
   branco: string
-  /** Ciano neon: só para efeitos de energia e HUD */
+  /** Ciano neon: só para brilhos de energia */
   ciano: string
+  /** Acentos de cada herói da equipe (Faísca, Tremor, Turbo, Astra) */
+  turquesa: string
+  roxo: string
+  fogo: string
+  lilas: string
+  /** Dourado (raios de luz, partículas, pôr do sol) */
+  dourado: string
 }
 
 export interface ConviteConfig {
@@ -45,14 +52,9 @@ export interface ConviteConfig {
     /** Frase curta que aparece no convite */
     frase: string
   }
-  heroi: {
-    /** Nome de herói, ex.: "Super João Lucas" */
+  equipe: {
+    /** Nome da equipe de heróis, ex.: "Equipe JL" */
     nome: string
-    /**
-     * Foto do hero (opcional). Preenchida = a foto aparece num quadro de HQ com a explosão "5 ANOS!".
-     * Vazia (`null`) = aparece o herói ilustrado em SVG.
-     */
-    foto: Foto | null
   }
   festa: {
     /** Data e hora no formato ISO com fuso, ex.: "2026-11-26T15:00:00-03:00" */
@@ -80,9 +82,9 @@ export interface ConviteConfig {
   }
   /** Assinatura no rodapé, ex.: "Com carinho, papai e mamãe". Vazio = linha escondida */
   assinatura: string
-  /** Fotos da galeria (quadros de HQ). Só aparece com `secoes.galeria: true`. */
+  /** Fotos da galeria (quadros de HQ). Desligada: o convite é todo ilustrado. */
   galeria: Foto[]
-  /** Música e efeitos sonoros gerados por código. `false` = convite mudo (o botão some). */
+  /** Tema heroico e efeitos sonoros gerados por código. `false` = convite mudo (o botão some). */
   musica: boolean
   /** Pix para presentes. `null` = seção escondida. */
   pix: {
@@ -103,7 +105,7 @@ export interface ConviteConfig {
   }
   /** Usado nas meta tags (prévia do link no WhatsApp) */
   site: {
-    /** Endereço final publicado, sem barra no final. Ex.: "https://super-joao-lucas.vercel.app" */
+    /** Endereço final publicado, sem barra no final. Ex.: "https://equipe-jl.vercel.app" */
     url: string
     titulo: string
     descricao: string
@@ -118,11 +120,8 @@ export const convite: ConviteConfig = {
     idade: 5,
     frase: 'Venha comemorar comigo com muita aventura!',
   },
-  heroi: {
-    nome: 'Super João Lucas',
-    // Quando chegar a foto do João Lucas fantasiado: coloque em originais/, rode `npm run fotos` e troque `null` por:
-    // { src: '/fotos/joao-heroi.webp', srcPequena: '/fotos/joao-heroi-600.webp', alt: 'João Lucas fantasiado de super-herói', largura: 1200, altura: 1600, foco: '50% 30%' }
-    foto: null,
+  equipe: {
+    nome: 'Equipe JL',
   },
   festa: {
     dataHora: '2026-11-26T15:00:00-03:00',
@@ -156,6 +155,11 @@ export const convite: ConviteConfig = {
     ceu: '#BFE3FF',
     branco: '#FFFFFF',
     ciano: '#22D3EE',
+    turquesa: '#14B8C4',
+    roxo: '#7C3AED',
+    fogo: '#FF7A1A',
+    lilas: '#B794F6',
+    dourado: '#FFB627',
   },
   secoes: {
     contagem: true,
@@ -168,8 +172,8 @@ export const convite: ConviteConfig = {
   site: {
     // TODO: endereço publicado (sem barra no final). Sem ele, a imagem da prévia no WhatsApp não aparece.
     url: '',
-    titulo: 'Super João Lucas · 5 anos',
-    descricao: 'Quinta-feira, 26 de novembro de 2026 · Enjoy Kids · Shopping Liv Mall. Venha comemorar comigo com muita aventura! ⚡',
+    titulo: 'João Lucas faz 5 anos · Junte-se à Equipe JL!',
+    descricao: 'Quinta-feira, 26 de novembro de 2026 · Enjoy Kids · Shopping Liv Mall. Venha comemorar comigo com muita aventura!',
     imagemOg: '/og.jpg',
   },
 }

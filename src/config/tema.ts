@@ -31,6 +31,11 @@ export function temaVars(p: Paleta): Record<string, string> {
     '--color-ceu': p.ceu,
     '--color-branco': p.branco,
     '--color-ciano': p.ciano,
+    '--color-turquesa': p.turquesa,
+    '--color-roxo': p.roxo,
+    '--color-fogo': p.fogo,
+    '--color-lilas': p.lilas,
+    '--color-dourado': p.dourado,
     // tons de texto (contraste AA garantido sobre céu/branco)
     '--color-tinta-2': mix(p.marinho, p.azul, 0.7),
     '--color-vermelho-txt': mix(p.vermelho, p.marinho, 0.7),
