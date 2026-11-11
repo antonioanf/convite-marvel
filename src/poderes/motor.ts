@@ -32,10 +32,19 @@ class RenderGL {
     this.r = new Render(gl)
     // os programas grandes compilam aos poucos, quando o celular estiver livre (sem travar)
     const fila: (keyof RenderGL['p'])[] = ['choque', 'temp', 'feixe', 'portal', 'nevoa']
+    // e cada um é "aquecido" com um desenho de 1 pixel: muitos drivers (ANGLE/D3D no Windows, alguns
+    // celulares) só compilam de verdade no primeiro desenho — assim o primeiro poder não trava
     const prox = () => {
       const k = fila.shift()
-      if (!k) return
-      this.prog(k)
+      if (!k) return this.aquecerBase()
+      const p = this.prog(k)
+      if (this.r.cena) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.r.cena.fb)
+        gl.viewport(0, 0, 1, 1)
+        gl.useProgram(p.p)
+        telaCheia(gl, p)
+        this.limpar()
+      }
       if ('requestIdleCallback' in window) requestIdleCallback(prox, { timeout: 1500 })
       else setTimeout(prox, 60)
     }
@@ -54,6 +63,14 @@ class RenderGL {
     const [fs, us] = u[k]
     this.p[k] = programa(gl, VS_TELA, fs, [...us])
     return this.p[k]!
+  }
+  /** Um quadro invisível passando por linhas, partículas, bloom e composição (aquece o resto). */
+  aquecerBase() {
+    if (!this.r.cena) return
+    const part = { x: 0, y: 0, vx: 0, vy: 0, g: 0, atrito: 0, vida: 0, max: 1, tam0: 1, tam1: 1, cor: [0, 0, 0] as [number, number, number], a0: 0, a1: 0, tipo: 0, seed: 0, aditiva: true }
+    const linha = { pts: [{ x: 0, y: 0 }, { x: 1, y: 1 }], larg: 1, halo: [0, 0, 0] as [number, number, number], nucleo: [0, 0, 0] as [number, number, number], nucLarg: 1, alfa: 0 }
+    this.desenhar({ t: 0, shake: [0, 0], linhas: [linha], escuras: [{ ...linha, escura: true }], luz: [part], sobre: [{ ...part, aditiva: false }], tempestade: null, ondas: [], poco: null, feixe: null, nevoa: null, portal: null, lente: [0, 0, 0, 0], calor: [0, 0, 0, 0, 0, 0], ativo: false })
+    this.limpar()
   }
   redimensionar(W: number, H: number, dpr: number) {
     this.r.redimensionar(W, H, dpr)

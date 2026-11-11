@@ -95,7 +95,16 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
       let tick = 0
       let ultimo = 0
       const passo = () => {
-        id = window.setTimeout(passo, perf.isLite() ? 140 : 70)
+        const lite = perf.isLite()
+        // modo leve: a eletricidade vem em rajadas (~1 s ligada a cada ~3 s), sem acordar a página no intervalo
+        if (lite && tick % 7 === 6) {
+          tick++
+          g.innerHTML = ''
+          gf.innerHTML = ''
+          id = window.setTimeout(passo, 2000)
+          return
+        }
+        id = window.setTimeout(passo, lite ? 150 : 70)
         if (fundo.pausado() || document.hidden) {
           if (ultimo) {
             g.innerHTML = ''
@@ -106,14 +115,15 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
         }
         ultimo = 1
         tick++
-        const n = perf.isLite() ? 2 : 4 // modo leve: menos arcos e mais espaçados no tempo
+        const n = lite ? 2 : 4 // modo leve: menos arcos
         let s = ''
         for (let i = 0; i < n; i++) s += camadas(arco(pts, 14, 46))
         g.innerHTML = s
         g.setAttribute('opacity', (0.5 + Math.random() * 0.5).toFixed(2))
         // a cada ~1,5 s um arco longo atravessa o nome e some rápido
-        if (tick % 22 === 0) gf.innerHTML = camadas(arco(pts, 90, 200), 1.2)
-        else if (tick % 22 === 2) gf.innerHTML = ''
+        if (!lite && tick % 22 === 0) gf.innerHTML = camadas(arco(pts, 90, 200), 1.2)
+        else if (lite ? tick % 7 === 3 : tick % 22 === 2) gf.innerHTML = lite ? camadas(arco(pts, 90, 200), 1.2) : ''
+        else if (lite && tick % 7 === 5) gf.innerHTML = ''
       }
       passo()
     })

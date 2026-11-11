@@ -264,7 +264,7 @@ export class Sim {
     const n = 7 + ((R() * 3) | 0)
     for (let i = 0; i < n; i++) {
       const ang = (i / n) * Math.PI * 2 + entre(-0.25, 0.25)
-      const len = entre(70, 190)
+      const len = entre(45, 125)
       const r = gerarRaio(p, { x: p.x + Math.cos(ang) * len, y: p.y + Math.sin(ang) * len * 0.62 }, { niveis: 5, desvio: 0.22, galhos: 0.45 })
       r.galhos.forEach((g, k) => this.rachas.push({ pts: g.pts, t0: t + k * 0.03, larg: k === 0 ? 1 : 0.6 }))
     }
@@ -538,7 +538,7 @@ export class Sim {
     }
     this.raios = this.raios.filter((r) => t - r.t0 < 0.9)
     this.fios = this.fios.filter((f2) => t - f2.t0 < f2.vida)
-    this.rachas = this.rachas.filter((r) => t - r.t0 < 4.2)
+    this.rachas = this.rachas.filter((r) => t - r.t0 < 3.1)
     this.ondas = this.ondas.filter((o) => t - o.t0 < o.dur)
     if (this.tempestade && t - this.tempestade.t0 > this.tempestade.dur) this.tempestade = null
     if (this.poco && t - this.poco.t0 > 3) this.poco = null
@@ -598,12 +598,14 @@ export class Sim {
       const cresce = ss(0, 0.14, age)
       const n = Math.max(2, Math.ceil(r.pts.length * cresce))
       const pts = r.pts.slice(0, n)
-      const some = 1 - ss(3.2, 4.2, age)
-      escuras.push({ pts, larg: 3.4 * r.larg, halo: [0.03, 0.015, 0.02], nucleo: [0, 0, 0], nucLarg: 1, alfa: 0.88 * some, escura: true })
-      const calor = 1 - ss(0, 2.6, age)
+      // fissura fina (não um galho grosso por cima do texto) que some em ~3 s
+      const some = 1 - ss(1.9, 3, age)
+      escuras.push({ pts, larg: 2.2 * r.larg, halo: [0.03, 0.015, 0.02], nucleo: [0, 0, 0], nucLarg: 1, alfa: 0.62 * some, escura: true })
+      // a brasa nasce laranja-amarela (nunca branca, senão parece raio) e esfria até vermelho escuro
+      const calor = 0.72 * (1 - ss(0, 1.8, age))
       if (calor > 0.02) {
         const c = temperatura(calor)
-        linhas.push({ pts, larg: 7 * r.larg, halo: c, nucleo: temperatura(Math.min(1, calor + 0.25)), nucLarg: 1.1 * r.larg, alfa: Math.min(1, calor * 1.4) })
+        linhas.push({ pts, larg: 4.2 * r.larg, halo: c, nucleo: temperatura(Math.min(0.92, calor + 0.1)), nucLarg: 0.8 * r.larg, alfa: Math.min(0.85, calor * 1.2) })
       }
     }
 

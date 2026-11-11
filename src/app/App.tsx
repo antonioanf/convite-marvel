@@ -17,7 +17,7 @@ import { appState } from '../lib/appState'
 import { iniciarGestos } from '../poderes/gestos'
 import { debug } from '../lib/debug'
 import { poderes } from '../poderes/estado'
-import { acionar } from '../poderes/acionar'
+import { acionar, carregarMotor } from '../poderes/acionar'
 
 const s = convite.secoes
 
@@ -55,7 +55,7 @@ export function App() {
     )
     document.querySelectorAll('.page > section, .page > footer').forEach((el) => io.observe(el))
     // testes automáticos
-    if (debug.teste) Object.assign(window, { __convite: { poderes, acionar } })
+    if (debug.teste) Object.assign(window, { __convite: { poderes, acionar, carregarMotor } })
     return () => io.disconnect()
   }, [])
 

@@ -288,13 +288,31 @@
       transform: translateX(10%);
     }
   }
-  /* modo leve: nuvens sem desfoque, raios de sol parados */
+  /* modo leve (celular fraco): menos camadas animadas. Nuvens sem desfoque e paradas, céu parado,
+     raios de sol parados e sem mistura de camadas (blend força o navegador a reler o fundo),
+     sem grão de filme; aura do selo parada e sem o reflexo correndo. */
   html.lite .nuvens {
     filter: none;
+    animation: none;
+    will-change: auto;
+  }
+  html.lite .ceu {
+    animation: none;
+    will-change: auto;
   }
   html.lite .raios-sol {
     animation: none;
-    opacity: 0.75;
+    mix-blend-mode: normal;
+    opacity: 0.6;
+  }
+  html.lite .grao {
+    display: none;
+  }
+  html.lite .selo-aura {
+    animation: none;
+  }
+  html.lite .selo-reflexo {
+    display: none;
   }
   /* enquanto um poder está na tela, o fundo congela */
   html.poder-ativo .cena *,

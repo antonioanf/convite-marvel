@@ -49,8 +49,9 @@ let menuBloqueado = false
 // dois dedos
 let dois: { x: number; y: number; ax: number; ay: number; bx: number; by: number; timer: number; ativo: boolean } | null = null
 
-function comecar(x: number, y: number) {
-  const t = performance.now()
+/** `t` = hora em que o toque aconteceu (event.timeStamp): com a página ocupada, os eventos chegam
+ *  atrasados, mas a velocidade do gesto continua certa. */
+function comecar(x: number, y: number, t = performance.now()) {
   g = { x0: x, y0: y, t0: t, x, y, pts: [{ x, y, t }], giro: 0, ang: null, rastro: 0, estado: 'livre', hold: 0 }
   const atual = g
   atual.hold = window.setTimeout(() => {
@@ -61,9 +62,8 @@ function comecar(x: number, y: number) {
   }, SEGURAR_MS)
 }
 
-function mover(x: number, y: number) {
+function mover(x: number, y: number, t = performance.now()) {
   if (!g) return
-  const t = performance.now()
   const dx = x - g.x
   const dy = y - g.y
   const passo = Math.hypot(dx, dy)
@@ -105,7 +105,7 @@ function raioMedio(pts: Amostra[]) {
   return pts.reduce((s, p) => s + Math.hypot(p.x - cx, p.y - cy), 0) / pts.length
 }
 
-function terminar(cancelado = false) {
+function terminar(cancelado = false, tEv = performance.now()) {
   if (!g) return
   const e = g
   g = null
@@ -121,7 +121,7 @@ function terminar(cancelado = false) {
     return
   }
   if (cancelado || e.estado !== 'livre') return
-  const t = performance.now()
+  const t = tEv
   const dur = t - e.t0
   const dx = e.x - e.x0
   const dy = e.y - e.y0
@@ -205,7 +205,7 @@ export function iniciarGestos() {
     (e) => {
       if (e.touches.length === 1) {
         ignorar = bloqueado(e.target)
-        if (!ignorar) comecar(e.touches[0].clientX, e.touches[0].clientY)
+        if (!ignorar) comecar(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)
       } else if (e.touches.length === 2 && !ignorar) doisComecar(e.touches[0], e.touches[1])
       else {
         terminar(true)
@@ -219,13 +219,13 @@ export function iniciarGestos() {
     (e) => {
       if (ignorar) return
       if (dois && e.touches.length >= 2) doisMover(e.touches[0], e.touches[1])
-      else if (g && e.touches.length === 1) mover(e.touches[0].clientX, e.touches[0].clientY)
+      else if (g && e.touches.length === 1) mover(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)
     },
     op,
   )
   const fim = (e: TouchEvent) => {
     if (dois) doisTerminar()
-    else if (e.touches.length === 0) terminar(e.type === 'touchcancel' && g?.estado === 'livre')
+    else if (e.touches.length === 0) terminar(e.type === 'touchcancel' && g?.estado === 'livre', e.timeStamp)
     if (e.touches.length === 0) ignorar = false
   }
   document.addEventListener('touchend', fim, op)
@@ -236,21 +236,21 @@ export function iniciarGestos() {
     'pointerdown',
     (e) => {
       if (e.pointerType !== 'mouse' || e.button !== 0 || bloqueado(e.target)) return
-      comecar(e.clientX, e.clientY)
+      comecar(e.clientX, e.clientY, e.timeStamp)
     },
     op,
   )
   document.addEventListener(
     'pointermove',
     (e) => {
-      if (e.pointerType === 'mouse' && g) mover(e.clientX, e.clientY)
+      if (e.pointerType === 'mouse' && g) mover(e.clientX, e.clientY, e.timeStamp)
     },
     op,
   )
   document.addEventListener(
     'pointerup',
     (e) => {
-      if (e.pointerType === 'mouse') terminar()
+      if (e.pointerType === 'mouse') terminar(false, e.timeStamp)
     },
     op,
   )

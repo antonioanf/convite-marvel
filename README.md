@@ -1,15 +1,12 @@
-# 🦋 Convite Borboleta — Anna Liz · 4 aninhos
+# Missão JL · João Lucas · 5 anos
 
 Convite de aniversário em formato de site (uma página), feito para ser aberto **no celular** pelo link do WhatsApp.
-Visual "iridescente tech": fundo perolado, gradientes holográficos, cartões em bento e borboletas metalizadas, tudo tirado das fotos do ensaio.
+Clima de filme de super-herói: realista e adulto, mas colorido e cheio de energia.
 
-- Abertura com a borboleta de `originais/borboleta.png`: as asas abrem e o convite aparece em ~0,55 s depois do toque
-- Hero com a foto principal em "cartão holográfico", que inclina com o giroscópio ou o dedo
-- Borboletas 3D/2D que fogem do dedo, pousam na foto e **podem ser pegas** (meta: 10)
-- Raspadinha prateada na data e velinhas para apagar segurando o dedo (ou soprando)
-- Contagem regressiva, local e agenda, galeria com lightbox, confirmação pelo WhatsApp e Pix
-
-**Lighthouse (mobile, build de produção, Lighthouse 13.6):** Performance 88 · Acessibilidade 100 · Boas práticas 100 · SEO 100 (LCP 3,2 s).
+- **Abertura:** noite de tempestade, chuva e o emblema JL de aço. No toque, um raio atinge o emblema, o metal fica em brasa e a luz revela o convite já colorido.
+- **Hero:** céu de entardecer épico (nuvens de tempestade acesas por baixo em laranja, vermelho e dourado, rasgos de céu azul e roxo, raios de sol), "JOÃO LUCAS" em metal com reflexos vermelho e dourado, "5 ANOS" em dourado incandescente e eletricidade azul/ciano correndo pelas letras.
+- **6 poderes com gestos** (WebGL com bloom; fallback em canvas 2D), seção PODERES com mão-fantasma, medidor e SOBRECARGA.
+- Contagem regressiva, A missão (data decodificada pela rajada, local, mapa, agenda), Aceitar missão (credencial em PNG + WhatsApp) e rodapé com brasas.
 
 ---
 
@@ -19,8 +16,8 @@ Requisitos: Node.js 20 ou mais novo.
 
 ```bash
 npm install
-npm run dev            # abre em http://localhost:5173
-npm run build          # gera a pasta dist/ para publicar
+npm run dev            # http://localhost:5173  (use `npm run dev -- --host` para abrir no celular pela rede)
+npm run build          # gera dist/ para publicar
 npm run preview        # testa o build em http://localhost:4173
 ```
 
@@ -30,178 +27,109 @@ Tudo fica em **`src/config/convite.ts`**. Procure por `TODO`:
 
 | Campo | O que colocar | Enquanto estiver vazio… |
 |---|---|---|
-| `festa.endereco` | Ex.: `'Rua Tal, 123 – Bairro, Cidade-PB'` | Aparece "Endereço completo em breve" |
-| `festa.linkMapa` | Link do Google Maps (no app: Compartilhar → Copiar link) | O botão "Como chegar" não aparece |
-| `rsvp.whatsapp` | Só dígitos, com 55 + DDD: `'5583999999999'` | A confirmação mostra o aviso "WhatsApp ainda não configurado" |
-| `rsvp.prazo` | Data limite: `'2027-05-01'` | Some a frase "Confirme até…" |
-| `assinatura` | Ex.: `'Com amor, papai e mamãe'` | O rodapé mostra só "Esperamos você!" |
+| `festa.endereco` | Ex.: `'Av. Tal, 123 – Bairro, Fortaleza-CE'` | Aparece "Endereço completo em breve" |
+| `festa.linkMapa` | Link do Google Maps (no app: Compartilhar → Copiar link) | "Como chegar" abre uma busca pelo nome do local |
+| `rsvp.whatsapp` | Só dígitos, com 55 + DDD: `'5585999999999'` | A confirmação mostra o aviso "WhatsApp ainda não configurado" (nunca abre link quebrado) |
+| `rsvp.prazo` | Data limite: `'2026-11-22'` | Some a frase "Confirme até…" |
+| `assinatura` | Ex.: `'Com carinho, papai e mamãe'` | O rodapé mostra só "Te espero na festa!" |
 | `pix` | Troque `null` pelo objeto do exemplo comentado | A seção de presentes não aparece |
 | `site.url` | Endereço publicado, sem barra no final | **A imagem da prévia no WhatsApp não aparece** |
 
-O horário já está definido: `festa.dataHora` é `2027-05-16T16:00:00-03:00` e `horarioDefinido` é `true`. O cartão mostra 16:00 e a agenda (Google e `.ics`) cria o evento das 16:00 às 20:00 (`duracaoHoras: 4`). Se um dia voltar a ser "a definir", basta pôr `horarioDefinido: false`: o convite mostra "A definir" e a agenda vira evento de dia inteiro.
+Data fixa: quinta-feira, 26/11/2026, 15:00 (`2026-11-26T15:00:00-03:00`, `America/Fortaleza`), Enjoy Kids · Shopping Liv Mall.
 
-Depois de mudar data, nome ou local, gere de novo a imagem de prévia: `npm run og`. A imagem (`public/og.jpg`, 1200×630) tem a foto principal, "Anna Liz", "4 aninhos" e a data; o quadrado do meio (foto + nome + data + "4") funciona sozinho na miniatura pequena do WhatsApp.
+## 3. Paleta
 
-A borboleta da abertura sai de `originais/borboleta.png`: `npm run borboleta` (ou `npm run borboleta -- 400 60` para escolher largura e qualidade). O original atual tem só 294 px; com um de 600 px ou mais ela fica mais nítida em telas 3x.
+Fica em `convite.paleta`. O fundo escuro é só a base para as cores de luz brilharem.
 
-## 3. Publicar na Vercel (e atualizar o `site.url`)
-
-1. O projeto já está no repositório privado `https://github.com/antonioanf/convite-borboleta` (branch `main`). Envie o que estiver só no computador com `git push`.
-2. Em [vercel.com](https://vercel.com), entre com a conta do GitHub, clique em **Add New → Project**, autorize o acesso ao repositório `convite-borboleta` (se ele não aparecer: **Adjust GitHub App Permissions** e marque o repositório) e clique em **Deploy**. O Vite é detectado sozinho (build `npm run build`, saída `dist`).
-3. Copie o endereço que a Vercel mostrar, ex.: `https://convite-borboleta.vercel.app`.
-   Para um nome mais bonito: **Settings → Domains** (dá para trocar o subdomínio `.vercel.app`).
-4. No `convite.ts`, coloque esse endereço em `site.url` (sem barra no final).
-5. Rode `npm run og`, faça commit e `git push`. A Vercel publica de novo sozinha em ~1 minuto.
-6. Teste a prévia colando o link num chat do WhatsApp. Se a imagem antiga ainda aparecer (cache do WhatsApp), envie com `?v=2` no final.
-
-Sem GitHub: `npx vercel` dentro da pasta (e `npx vercel --prod` para publicar a versão final).
-
-## 4. Paleta (tirada das fotos)
-
-Fica em `convite.paleta`. Os tons de **texto** são calculados em `src/config/tema.ts` (misturas com o roxo profundo) para passar no contraste AA.
-
-| Nome no config | Cor | De onde vem |
+| Nome | Cor | Uso |
 |---|---|---|
-| `perola` | `#F6F2FA` | parede clara do estúdio (fundo) |
-| `lavanda` | `#E4D4F7` | balões claros |
-| `lilas` | `#C3A3EE` | vestido / balões médios |
-| `violeta` | `#8B5CF6` | balões mais fortes |
-| `roxo` | `#3B1C6E` | sombras dos balões — **texto principal** |
-| `rosa` | `#F48FB8` | glacê do bolo |
-| `magenta` | `#E0428A` | borboleta rosa / número do bolo (acento) |
-| `prata`, `holoCiano`, `holoRosa` | `#E9E6F2`, `#A5F3FC`, `#F9A8D4` | balões metalizados (gradiente holográfico) |
+| `vermelho` | `#E62429` | reflexos do metal, seção "A missão" |
+| `dourado` | `#F5B700` | 5 ANOS, botões, seção PODERES, poeira cósmica |
+| `azul` | `#1E90FF` | eletricidade, Tempestade, contagem |
+| `ciano` | `#22D3EE` | energia, números da contagem |
+| `roxo` | `#7B2FF7` | rasgos do céu, "Aceitar missão" |
+| `fogo` | `#FF6A00` | nuvens acesas, Rajada |
+| `branco` | `#FFF6EC` | texto (branco quente) |
 
-## 5. Tipografia
+Os tons de **texto** das cores escuras demais para letra pequena (vermelho, roxo) são clareados em `src/config/tema.ts` (`text-vermelho-txt`, `text-roxo-txt`). Todo texto que fica sobre o céu tem uma base escura macia atrás; `node scripts/contraste.mjs` mede o pior caso de cada um (com o texto no alto, no meio e embaixo da tela) e confere o AA.
 
-Servidas pelo próprio site (`public/fonts/`, vindas do `@fontsource`), com `preload` e `font-display: swap`:
+## 4. Os poderes
 
-- **Instrument Serif** (itálico): nome e títulos
-- **Manrope** (variável 200–800): textos
-- **JetBrains Mono** (variável): números, data, contagem e rótulos em caixa alta
+Funcionam no convite inteiro, menos sobre campos de texto, botões e links. Arrastar na vertical continua rolando a página.
 
-> Nos screenshots do **WebKit do Playwright no Windows**, a Manrope aparece toda fina: esse WebKit de teste não aplica pesos de fontes variáveis. No Chrome e no Safari de verdade (iPhone) os pesos aparecem certos.
-
-## 6. Fotos
-
-As originais ficam em `originais/` e são convertidas para WebP com:
-
-```bash
-npm run fotos     # gera public/fotos/<nome>.webp (até 1200 px) e <nome>-600.webp
-```
-
-| Arquivo | Onde aparece |
-|---|---|
-| `anna-deitada` | **Hero** (foto principal) e galeria |
-| `anna-girando` | Cartão largo da idade (formato original, sem recorte) e galeria |
-| `anna-bolo` | Seção "Sopre as velinhas" e galeria |
-| `anna-balao3` | Só na galeria |
-
-- Cada foto tem `largura`, `altura` e `foco` (ponto do recorte, CSS `object-position`) no config.
-- Nenhuma foto tem legenda visível; a descrição fica só no `alt`.
-- As fotos atuais vieram com só ~890 px de largura (comprimidas pelo WhatsApp). Quando chegarem as do estúdio em alta, coloque-as em `originais/` com os mesmos nomes e rode `npm run fotos`.
-
-## 7. Música e sons
-
-- `musica: '/musica/caixinha-de-musica.mp3'` (ou `null` para não ter música nem efeitos sonoros).
-- A música só começa depois do toque de abertura, com fade-in.
-- Os efeitos (brilho, sininho, "pop") são gerados por código (Web Audio) e respeitam o botão de mudo.
-
-## 8. Interações
-
-| Interação | Como funciona | Fallback |
+| Poder | Gesto | Cores |
 |---|---|---|
-| Rastro de brilho | Arrastar o dedo deixa estrelinhas (~0,6 s) | Máx. 120 partículas (60 no modo leve) |
-| Toque solta borboletas | Toque rápido numa área vazia → 2–3 borboletas + vibração | — |
-| Pegue as borboletas | Tocar numa borboleta → brilho + contador `n/10`; outra entra em 2–4 s; aos 10, mensagem surpresa | Funciona no 2D e no 3D |
-| Foto holográfica | Inclina até 8° com o giroscópio (ou o dedo/mouse) | Parada com reduced-motion |
-| Raspadinha da data | Raspar ~60% completa sozinha, com brilho e confete. O cartão tem `touch-action: none`: raspar **não rola a página** | Já revelada com reduced-motion; a data está sempre no HTML; botão "Revelar" para teclado |
-| Velinhas | Segurar ~1,3 s (ou Espaço/Enter) apaga; opcional "usar microfone" para soprar | Se negar o microfone, segurar continua funcionando |
-| Contagem | Números que viram, bolinha "ao vivo"; no dia vira "É hoje!" | — |
-| Confirmação ("Você vem?") | Nome e recado opcional (sem número de pessoas); o botão vira check, borboletas + confete e abre o WhatsApp com a mensagem pronta | Aviso se o WhatsApp não estiver configurado |
+| Tempestade | arrastar rápido de cima para baixo (começando no alto da tela): o raio cai onde o dedo parou | azul elétrico e branco |
+| Impacto | toque duplo num ponto | laranja e vermelho incandescente |
+| Rajada de energia | segurar (carrega) e soltar: o feixe sai na direção do toque | laranja de fogo e azul-celeste |
+| Magia | girar o dedo em círculos (mais de 1,5 volta) | violeta e turquesa com fiapos dourados |
+| Portal | desenhar um círculo fechado e soltar | anéis turquesa, violeta e dourado |
+| Energia cósmica | segurar com dois dedos (ou segurar bem longo, > 2,6 s) | azul, ciano, dourado e laranja |
 
-### O que saiu
+- **Motor** (`src/poderes/`): `gestos.ts` reconhece os gestos (no pacote principal, pequeno); `acionar.ts` baixa o motor sob demanda; `motor.ts` é um chunk separado (~19 KB gzip) que só baixa perto da seção PODERES ou no primeiro gesto. `sim.ts` simula (raios fractais, ondas de choque, rachaduras com brasa esfriando, pedras com física, fumaça, feixe, névoa, portal, esferas com rastro de cometa); o WebGL (`gl/`) desenha com bloom e distorção (refração das ondas, lente do portal, ar ondulando de calor). Sem WebGL, ou se o aparelho ficar abaixo de ~28 fps, cai para o canvas 2D (`render2d.ts`).
+- **Convite reage:** tremor, ondulação, levitação (magia) e puxão do portal nos cartões, só com `translate`/`rotate`/`scale`.
+- **Segurança:** no máximo 3 clarões por segundo, nunca branco puro em tela cheia (opacidade ≤ 0,55); com `prefers-reduced-motion` cada poder vira só um brilho suave colorido; partículas limitadas (300 no WebGL, 120 no 2D); o motor para com a aba em segundo plano e quando não há efeito vivo; enquanto um poder roda, os efeitos de fundo do hero ficam pausados.
+- **Seção PODERES:** mão-fantasma animada para cada gesto, botão "Disparar" e o medidor "PODERES n/6" (guardado no aparelho). Com os 6, destrava a SOBRECARGA: tudo junto por ~3 s, terminando em "TODOS OS PODERES ATIVADOS. TE ESPERO NA FESTA!".
 
-- O campo "quantas pessoas" do "Você vem?" (e a linha correspondente na mensagem do WhatsApp).
-- A seção e o botão "Compartilhe o convite".
-- As legendas visíveis das fotos (o texto continua no `alt`, para leitores de tela).
-- O rótulo "Convite · Nº 04" da abertura, do hero e da imagem de prévia.
-- O easter egg de chacoalhar o celular (`lib/shake.ts`, a dica "Psiu…" e o pedido de permissão de movimento). A inclinação da foto principal continua (usa o giroscópio, outro sensor).
-- A borboleta da abertura desenhada em código: agora é a imagem `originais/borboleta.png` (`npm run borboleta`).
-
-## 9. Testes
+## 5. Testes
 
 ### Parâmetros na URL
 
 | Parâmetro | Efeito |
 |---|---|
-| `?modo=leve` / `?modo=3d` | Força as borboletas 2D / 3D |
-| `?agora=2027-05-16T10:00` | Simula a data/hora atual ("É hoje!"; `2027-05-17T10:00` mostra o agradecimento) |
-| `?abrir=1` | Pula a intro |
-| `?teste=1` | Expõe `window.__convite` para os testes automáticos |
+| `?modo=leve` / `?modo=normal` | Força o modo leve / normal (o normal não cai para o leve sozinho) |
+| `?motor=2d` | Força o fallback 2D dos poderes |
+| `?agora=2026-11-26T10:00` | Simula a data/hora ("É hoje" com explosão cósmica; `2026-11-27T10:00` mostra "Missão cumprida") |
+| `?abrir=1` | Pula a abertura |
+| `?teste=1` | Expõe `window.__convite` (poderes e acionar) para os testes |
 
-### Automáticos (Playwright)
-
-```bash
-npx playwright install chromium webkit   # só na primeira vez
-npm run dev                               # em outro terminal
-npm run shots -- --video                  # screenshots: iPhone 13, Pixel 5, 360x740, 430x932
-npm run testes                            # testes de interação
-```
-
-`npm run testes` cobre: intro, horário e agenda, raspadinha (inclusive que raspar com o dedo não rola a página), velinhas (toque curto não apaga, segurar apaga), pegar 10 borboletas nos modos leve e 3D, toque que solta borboletas, lightbox, RSVP, Pix, `.ics` e os estados da contagem. Os resultados ficam em `screenshots/`.
-
-### Desempenho (`npm run perf`)
+### Scripts (Playwright, Chromium emulando Pixel 5)
 
 ```bash
-npm run build && npm run preview          # em outro terminal (http://localhost:4173)
-npm run perf                              # ou: npm run perf -- http://localhost:4173/ screenshots/desempenho 3
+npx playwright install chromium        # só na primeira vez
+node scripts/ver.mjs                   # prints da abertura, hero e seções → screenshots/ver/
+node scripts/contraste.mjs             # contraste AA dos textos sobre o céu
+node scripts/quadros.mjs [--gestos] [--2d] [poder]   # cada poder quadro a quadro → screenshots/quadros/
+node scripts/folha.mjs                 # junta os quadros de cada poder numa folha (_folha-<poder>.png)
+node scripts/diag-motor.mjs [--gpu] [--2d]          # tempo de quadro de cada poder
+npm run build && npm run preview       # (outro terminal) e então:
+node scripts/perf-hero.mjs [--leve]    # FPS e tarefas longas do hero, CPU 4x mais lenta; trace em screenshots/desempenho/
+node scripts/perf-camadas.mjs          # FPS do hero desligando uma camada por vez
 ```
 
-Abre o convite no Chromium emulando um Pixel 5 com a **CPU 4x mais lenta** e mede três fases: abertura (carregar + tocar na intro), scroll do convite inteiro com o dedo e interações (toques, rastro de brilho, raspadinha, velinhas). Para cada fase mostra as tarefas longas (> 50 ms), o tempo bloqueado e o FPS médio (mediana das rodadas), e grava o trace de cada rodada em `screenshots/desempenho/` (abre no DevTools → Performance → *Load profile*).
+## 6. Desempenho do hero
 
-**Antes e depois da rodada de desempenho** (Pixel 5 emulado, CPU 4x mais lenta, mediana de 2 rodadas; "antes" é o commit `7fff1bb`, "depois" é a versão atual):
+Medido com `scripts/perf-hero.mjs` (Chromium, Pixel 5 emulado, **CPU 4x mais lenta**, build de produção, hero parado por 6 s):
 
-| Fase | Tarefas longas (antes → depois) | Tempo bloqueado | Maior tarefa | FPS médio | Quadros lentos (> 50 ms) |
-|---|---|---|---|---|---|
-| Abertura | 8,5 → 7 | 956 → 899 ms | 461 → 344 ms | 24,5 → 38,5 | 16 → 8,5 |
-| Scroll do convite | 53,5 → **4** | 315 → **15** ms | 93 → 59 ms | 23,3 → 29,4 | 106,5 → **26** |
-| Interações | 7 → 2,5 | 84 → 97 ms | 105 → 118 ms | 27,3 → 37,5 | 59,5 → 11,5 |
+| Modo | FPS | Tarefas longas | Tempo bloqueado |
+|---|---|---|---|
+| Normal (forçado com `?modo=normal`) | 11,5 | 12 | 1,6 s |
+| Leve, antes do ajuste | 12,3 | — | — |
+| **Leve, depois do ajuste** | **58,8** | **0** | **0 ms** |
 
-O FPS fica abaixo de 60 porque a CPU está 4x mais lenta de propósito; num celular de verdade a folga é maior.
+- Esse Chromium de teste compõe as camadas **sem GPU** (na CPU), por isso o modo normal fica tão baixo ali; num celular com GPU a folga é bem maior. Mesmo assim, **o convite se protege sozinho**: nos primeiros 4 s ele mede o FPS e, abaixo de 45, liga o modo leve (o `?modo=normal` existe só para medir sem essa troca).
+- `scripts/perf-camadas.mjs` mostrou que nenhuma camada sozinha é a culpada: é a soma (sem nenhuma camada decorativa: ~52 fps). No modo leve, as que mais pesavam eram os raios de sol (`mix-blend-mode`), o grão, a aura do selo e a eletricidade do título.
+- **O que o modo leve corta** (o normal continua igual): raios de sol parados e sem blend; céu e nuvens parados e sem desfoque; sem grão de filme; aura do selo parada e sem o reflexo; eletricidade do título em rajadas (~1 s a cada ~3 s, 2 arcos); brasas e poeira 6 + 8 (antes 8 + 12), desenhadas a ~30 fps.
+- Enquanto um poder está ativo, as animações do fundo do hero (céu, nuvens, raios de sol, grão, brasas e eletricidade do título) ficam pausadas.
+- Poderes: com GPU, ~55 fps (17–19 ms por quadro). Os shaders são compilados e "aquecidos" em segundo plano assim que o motor baixa, para o primeiro poder não travar (no Windows, o primeiro quadro caiu de 4,5 s para ~1 s; em celular a compilação costuma ser mais rápida).
 
-## 10. Como funciona por dentro
+## 7. Como funciona por dentro
 
 ```
-index.html                 intro em HTML/CSS puro (borboleta embutida como imagem): aparece instantaneamente
-src/main.ts                entrada pequena: intro + moldura no desktop
+index.html                 abertura em HTML/CSS puro (aparece na hora); paleta e emblema injetados pelo vite.config.ts
+src/main.ts                entrada pequena: abertura + moldura no desktop
 src/config/convite.ts      ← TODO o conteúdo
-src/config/tema.ts         paleta → variáveis CSS (+ tons de texto com contraste AA)
-src/lib/
-  butterflyField.ts        simulação das borboletas (voo, fuga do dedo, pouso, captura)
-  wingArt.ts               textura metalizada da asa (a mesma no 3D e no 2D)
-  holo.ts                  ângulo do brilho holográfico (inclinação + scroll)
-  sfx.ts                   efeitos sonoros
-  celebrate.ts             confete + borboletas
-  datas.ts, calendar.ts    datas formatadas, Google Agenda e .ics (dia inteiro se o horário não estiver definido)
+src/config/tema.ts         paleta → variáveis CSS (+ tons de texto AA)
+src/intro/intro.ts         chuva, relâmpagos e o raio que abre o convite
 src/components/
-  effects/                 Mesh (fundo), EffectsLayer (canvas 2D), Butterflies3D (R3F, lazy)
-  sections/                Hero, Destaque, Countdown, Details, Gallery, Lightbox, Velinhas, Rsvp, Pix, Footer
-  fun/                     Scratch, Candles, CatchCounter, ProgressBar
-  ui/                      Card, HoloPhoto, Press, Icons, Cake, Photo, BottomBar, MusicButton...
+  cena/Cena.tsx            céu de entardecer (lib/fx/ceu.ts, pintado num Worker), raios de sol, cidade, atmosfera
+  hero/                    Hero, Selo (emblema de metal), TituloEletrico
+  sections/                Countdown, Missao, Poderes, Rsvp (credencial), Pix, Footer
+src/poderes/               gestos, acionar, motor (chunk), sim, gl/, render2d, cartoes, catalogo, estado
+src/lib/fx/                raio fractal, camada 2D (faíscas do dedo, clarão), atmosfera, pausa do fundo
+src/lib/credencial.ts      credencial em PNG (canvas) e salvar/compartilhar
 ```
 
-- **Uma simulação e dois desenhos:** `butterflyField.ts` calcula as borboletas; a cena 3D e o canvas 2D só desenham.
-- **Pouso:** elementos com `data-perch="fx,fy,ângulo;..."` viram lugar de pouso (hoje, a moldura da foto principal).
-- **Modo leve automático:** com `hardwareConcurrency ≤ 4`, `deviceMemory ≤ 4`, sem WebGL, FPS < 45 na cena 3D ou economia de dados.
-- **Desempenho** (detalhes e números em `npm run perf`, seção 9):
-  - DPR máximo 1,5; 3D só depois da intro; o canvas 2D descansa quando não há nada para desenhar.
-  - Animações contínuas só com `transform`/`opacity` (as entradas dos cartões e as letras do nome não animam mais `filter: blur`).
-  - Nada lê o layout no meio de um quadro: a posição do scroll é lida uma vez no evento de scroll (`lib/scrollPos.ts`), a barra de progresso só mede a altura da página quando ela muda, o pouso das borboletas mede a foto no máximo a cada 0,25 s.
-  - Poucas camadas: o fundo mesh é uma camada animada só (as 4 manchas num elemento) e o grão faz parte do fundo; o brilho que segue o dedo (`.spot`) não tem `will-change`; o `backdrop-filter` ficou só na pill de baixo.
-  - O brilho holográfico só é atualizado nos elementos visíveis, e as animações CSS das seções fora da tela ficam pausadas.
-- **Desktop:** o próprio convite aparece num `<iframe>` dentro de uma moldura de celular.
-
-### Bibliotecas
-
-Runtime: Vite, React, TypeScript, Tailwind CSS v4, Framer Motion, GSAP + ScrollTrigger, Lenis, React Three Fiber + drei, canvas-confetti (baixado só na primeira comemoração).
-Só para desenvolvimento: Playwright (testes e imagem OG), `@fontsource` (fontes), `sharp` (conversão das fotos e da borboleta da abertura).
+- Nenhuma imagem da internet: céu, emblema, cidade, mapa, mãos e efeitos são gerados por código.
+- Sons gerados por Web Audio (`lib/sfx.ts`), respeitando o botão de mudo.
+- No desktop, o próprio convite aparece num `<iframe>` dentro de uma moldura de celular.

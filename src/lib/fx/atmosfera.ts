@@ -68,7 +68,7 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
     }
   }
   // modo leve: menos brasas e menos poeira (as de longe somem primeiro)
-  const quantos = () => (perf.isLite() ? { brasas: 8, poeira: 12 } : { brasas: 18, poeira: 30 })
+  const quantos = () => (perf.isLite() ? { brasas: 6, poeira: 8 } : { brasas: 18, poeira: 30 })
   const ps: P[] = []
   const ajustar = () => {
     const q = quantos()
@@ -91,6 +91,8 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
 
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame)
+    // modo leve: brasas e poeira a ~30 quadros por segundo (metade do trabalho, movimento lento igual)
+    if (perf.isLite() && now - ultimo < 30) return
     const dt = Math.min(0.05, (now - ultimo) / 1000)
     ultimo = now
     if (medindo.n >= 0) {

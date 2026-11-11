@@ -5,6 +5,7 @@
  * e rolagem (scroll com o dedo). Para cada uma: FPS médio, quadros lentos (> 50 ms) e tarefas longas.
  */
 import { chromium, devices } from 'playwright'
+import { mkdirSync } from 'node:fs'
 
 const url = process.argv.find((a) => a.startsWith('http')) ?? 'http://localhost:4173/'
 const leve = process.argv.includes('--leve')
@@ -25,7 +26,7 @@ await page.addInitScript(() => {
   }
   requestAnimationFrame(f)
 })
-await page.goto(url + (leve ? '?modo=leve' : ''), { waitUntil: 'load' })
+await page.goto(url + (leve ? '?modo=leve' : '?modo=normal'), { waitUntil: 'load' })
 await page.waitForTimeout(1500)
 
 const medir = async (nome, acao) => {
@@ -54,7 +55,10 @@ await medir('abertura', async () => {
   await page.tap('#intro')
   await page.waitForTimeout(2000)
 })
+mkdirSync('screenshots/desempenho', { recursive: true })
+await browser.startTracing(page, { path: `screenshots/desempenho/hero${leve ? '-leve' : ''}.json`, screenshots: false })
 await medir('hero parado', () => page.waitForTimeout(6000))
+await browser.stopTracing()
 await medir('rolagem', async () => {
   for (let i = 0; i < 6; i++) {
     await page.mouse.wheel(0, 260)

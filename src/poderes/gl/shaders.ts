@@ -146,18 +146,19 @@ void main() {
     vec2 d = px - p.xy;
     dens += exp(-dot(d, d) / (s * s)) * (1.0 - idade) * 0.55;
   }
-  dens = min(dens, 1.4);
+  dens = min(dens, 1.0);
   vec2 q = rot(uTempo * 0.35) * (px * 0.0075);
   float n = fbm(q * 1.4 + vec2(fbm(q * 2.2 + uTempo * 0.25), fbm(q * 1.8 - uTempo * 0.2)) * 1.3);
-  float massa = dens * (0.25 + n * 1.35);
+  // névoa translúcida: a cor fica em luz baixa (abaixo do limiar do bloom), só os fiapos brilham
+  float massa = min(1.0, dens * (0.2 + n * 1.2));
   vec3 violeta = vec3(0.55, 0.32, 0.98);
   vec3 turquesa = vec3(0.08, 0.75, 0.8);
   vec3 cor = mix(violeta, turquesa, smoothstep(0.35, 0.7, fbm(q * 2.6 + 4.0)));
   // fiapos dourados: cristas finas do ruído, só onde há névoa
-  float f = abs(ruido(rot(uTempo * 0.6) * (px * 0.012) + uTempo * 0.3) - 0.5);
-  float fio = smoothstep(0.035, 0.0, f) * smoothstep(0.15, 0.6, dens);
-  vec3 c = cor * massa * 0.85 + vec3(1.0, 0.78, 0.35) * fio * 1.3;
-  gl_FragColor = vec4(c * uAlfa, massa * 0.12 * uAlfa);
+  float f = abs(ruido(rot(uTempo * 0.6) * (px * 0.016) + uTempo * 0.3) - 0.5);
+  float fio = smoothstep(0.016, 0.0, f) * smoothstep(0.2, 0.7, dens) * (0.6 + 0.4 * ruido(px * 0.05 - uTempo));
+  vec3 c = cor * massa * 0.4 + vec3(1.0, 0.78, 0.35) * fio * 0.95;
+  gl_FragColor = vec4(c * uAlfa, massa * 0.22 * uAlfa);
 }`
 
 /** Portal: anéis de energia girando em sentidos opostos, símbolos inventados e um vazio estrelado no centro. */
