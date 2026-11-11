@@ -5,6 +5,7 @@ import { convite } from './src/config/convite.ts'
 import { buildIcs } from './src/lib/calendar.ts'
 import { temaCss } from './src/config/tema.ts'
 import { emblemaSvg } from './src/lib/emblema.ts'
+import { burstSvg } from './src/lib/burst.ts'
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -49,6 +50,7 @@ function convitePlugin(): Plugin {
       ? `<link rel="preload" as="image" href="${esc(hero.src)}" imagesrcset="${esc(heroSrcset)}" imagesizes="(max-width: 480px) 92vw, 450px" fetchpriority="high" />`
       : '',
     '%EMBLEMA%': emblemaSvg(p, { glow: true, attrs: 'class="cv-emb-svg"' }),
+    '%POW%': burstSvg({ text: 'POW!', w: 300, h: 220, seed: 11, spikes: 15, fill: p.amarelo, textFill: p.vermelho, stroke: p.marinho, fontSize: 92 }),
   }
   return {
     name: 'convite-config',

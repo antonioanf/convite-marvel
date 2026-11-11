@@ -1,13 +1,12 @@
 /**
- * Intro: borboleta holográfica + "Toque para abrir".
- * O HTML/CSS já vem no index.html (aparece na hora); aqui só ligamos o toque
- * e a abertura (~0,6 s): as asas abrem e o brilho iridescente dissolve a tela.
+ * Intro: capa de gibi "Você recebeu uma missão!" + "Toque para abrir".
+ * O HTML/CSS já vem no index.html (aparece na hora); aqui só ligamos o toque e a abertura:
+ * a capa é duplicada (metade esquerda + metade direita) e rasga ao meio com um "POW!" (~0,55 s).
  */
 import { appState } from '../lib/appState'
-import { butterflyBurst, prefersReducedMotion } from '../lib/butterflySvg'
+import { prefersReducedMotion } from '../lib/perf'
 import { vibrate } from '../lib/haptics'
-import { music } from '../lib/audio'
-import { requestTilt } from '../lib/tilt'
+import { som } from '../lib/audio'
 import { debug } from '../lib/debug'
 import { loadApp } from '../lib/appLoader'
 import { sfx } from '../lib/sfx'
@@ -50,25 +49,26 @@ export function initIntro() {
     e?.preventDefault()
     const ready = loadApp()
     // Tudo que precisa de "gesto do usuário" acontece aqui, de forma síncrona:
-    requestTilt()
-    music.start()
-    sfx.sparkle()
-    vibrate([14, 40, 10])
+    som.start()
+    sfx.pow()
+    vibrate([18, 40, 30])
     el.setAttribute('aria-hidden', 'true')
 
-    // asas abrem + brilho na hora; a tela some assim que o app estiver pronto (sem espera artificial)
     const reduced = prefersReducedMotion()
-    el.classList.add('is-open')
-    if (!reduced) {
-      const bf = el.querySelector('.bf-wrap')!.getBoundingClientRect()
-      butterflyBurst({ x: bf.left + bf.width / 2, y: bf.top + bf.height / 2, count: 10, towardCamera: true })
+    if (reduced) el.classList.add('rm')
+    else {
+      // metade direita = cópia da capa (a esquerda é a original); o CSS recorta as duas no rasgo
+      const left = el.querySelector('.cv-l')!
+      const right = left.cloneNode(true) as HTMLElement
+      right.classList.replace('cv-l', 'cv-r')
+      left.after(right)
     }
+    el.classList.add('is-open')
     await ready
     unlock()
-    el.classList.add('is-gone')
-    // avisa o app no quadro seguinte: o esmaecer já começou (roda no compositor) enquanto o convite se monta
+    // avisa o app no quadro seguinte: o rasgo já começou (roda no compositor) enquanto o convite entra
     requestAnimationFrame(() => setTimeout(() => appState.open()))
-    await wait(reduced ? 200 : 600)
+    await wait(reduced ? 450 : 620)
     el.remove()
   }
 

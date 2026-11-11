@@ -12,8 +12,7 @@
     "og": "node scripts/gerar-og.mjs",
     "testes": "node scripts/interacoes.mjs",
     "perf": "node scripts/desempenho.mjs",
-    "fotos": "node scripts/fotos.mjs",
-    "borboleta": "node scripts/borboleta.mjs"
+    "fotos": "node scripts/fotos.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

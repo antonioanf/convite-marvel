@@ -1,31 +1,25 @@
 /**
- * Decide entre borboletas 3D (WebGL) e o "modo leve" 2D (canvas).
- * Leve quando: hardwareConcurrency ≤ 4, deviceMemory ≤ 4, sem WebGL,
- * ou quando o FPS medido nos primeiros 2s da cena 3D fica abaixo de 45.
+ * "Modo leve": menos partículas e canvas em resolução menor (DPR 1).
+ * Leve quando: hardwareConcurrency ≤ 4, deviceMemory ≤ 4, economia de dados,
+ * ou quando o FPS dos efeitos fica baixo (perf.downgrade).
  */
 import { debug } from './debug'
-import { prefersReducedMotion } from './butterflySvg'
 
 type Nav = Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } }
 type Listener = () => void
 
-function hasWebGL() {
-  try {
-    const c = document.createElement('canvas')
-    return !!(c.getContext('webgl2') || c.getContext('webgl'))
-  } catch {
-    return false
-  }
+export function prefersReducedMotion() {
+  return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 function initialLite(): boolean {
   if (debug.modo === 'leve') return true
-  if (debug.modo === '3d') return false
+  if (debug.modo === 'normal') return false
+  if (typeof navigator === 'undefined') return false
   const n = navigator as Nav
   if (n.hardwareConcurrency && n.hardwareConcurrency <= 4) return true
   if (n.deviceMemory && n.deviceMemory <= 4) return true
   if (n.connection?.saveData) return true
-  if (!hasWebGL()) return true
   return false
 }
 
@@ -35,9 +29,11 @@ const listeners = new Set<Listener>()
 export const perf = {
   reducedMotion: prefersReducedMotion(),
   isLite: () => lite,
-  /** Chamado pela cena 3D se o FPS ficar baixo. */
+  /** Máximo de partículas ao mesmo tempo. */
+  maxParticles: () => (lite ? 60 : 150),
+  /** Chamado pelos efeitos se o FPS ficar baixo. */
   downgrade(reason: string) {
-    if (lite || debug.modo === '3d') return
+    if (lite || debug.modo === 'normal') return
     lite = true
     console.info(`[convite] modo leve ativado: ${reason}`)
     listeners.forEach((l) => l())

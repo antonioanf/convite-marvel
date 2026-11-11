@@ -1,6 +1,6 @@
 /**
  * Parâmetros de teste pela URL:
- *  ?modo=leve | ?modo=3d       força o modo das borboletas
+ *  ?modo=leve | ?modo=normal   força o modo leve (menos partículas) ou o normal
  *  ?agora=2026-12-12T10:00     simula a data/hora atual (testar "É hoje!" e agradecimento)
  *  ?abrir=1                    pula a intro (útil para screenshots)
  *  ?teste=1                    expõe window.__convite para os testes automáticos
@@ -8,7 +8,7 @@
 const params = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams()
 
 export const debug = {
-  modo: params.get('modo') as 'leve' | '3d' | null,
+  modo: params.get('modo') as 'leve' | 'normal' | null,
   abrir: params.get('abrir') === '1',
   teste: params.get('teste') === '1',
   offsetMs: (() => {
