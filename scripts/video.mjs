@@ -51,7 +51,7 @@ let n = 0
 let cdp
 const dirQ = path.join(out, `${cena}-quadros`)
 if (quadros) {
-  fs.rmSync(dirQ, { recursive: true, force: true })
+  for (const f of fs.existsSync(dirQ) ? fs.readdirSync(dirQ) : []) fs.unlinkSync(path.join(dirQ, f))
   fs.mkdirSync(dirQ, { recursive: true })
   cdp = await context.newCDPSession(page)
   const t0 = Date.now()

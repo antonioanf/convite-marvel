@@ -4,25 +4,28 @@ import tailwindcss from '@tailwindcss/vite'
 import { convite } from './src/config/convite.ts'
 import { buildIcs } from './src/lib/calendar.ts'
 import { temaCss } from './src/config/tema.ts'
-import { emblemaSvg } from './src/lib/emblema.ts'
-import { burstSvg } from './src/lib/burst.ts'
+import { emblemaSvg, ESCUDO } from './src/lib/emblema.ts'
+import { cidadeSvg } from './src/lib/cidade.ts'
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/** "26 · 11 · 2026" no fuso da festa */
-function dataCurta() {
-  return new Intl.DateTimeFormat('pt-BR', { timeZone: convite.festa.fusoHorario, day: '2-digit', month: '2-digit', year: 'numeric' })
-    .format(new Date(convite.festa.dataHora))
-    .split('/')
-    .join(' · ')
+const fmt = (o: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('pt-BR', { timeZone: convite.festa.fusoHorario, ...o }).format(new Date(convite.festa.dataHora))
+
+/** "26 DE NOVEMBRO · 15H" (sem o horário se ainda não estiver definido) */
+function dataLonga() {
+  const dia = fmt({ day: 'numeric', month: 'long' }).toLocaleUpperCase('pt-BR')
+  if (!convite.festa.horarioDefinido) return dia
+  const h = fmt({ hour: '2-digit', minute: '2-digit' }).replace(':00', 'H').replace(':', 'H')
+  return `${dia} · ${h}`
 }
 
 /**
  * Lê src/config/convite.ts e:
  *  - preenche título, descrição, Open Graph e theme-color no index.html;
  *  - injeta a paleta como variáveis CSS (sem "piscar" a cor padrão);
- *  - embute o emblema na intro (aparece junto com o HTML);
+ *  - embute o emblema de metal e a cidade na abertura (aparecem junto com o HTML);
  *  - gera /convite.ics (agenda) e /favicon.svg (o emblema) no dev e no build.
  */
 function convitePlugin(): Plugin {
@@ -37,15 +40,14 @@ function convitePlugin(): Plugin {
     '%DESCRICAO%': esc(convite.site.descricao),
     '%URL%': esc(convite.site.url),
     '%OG_IMAGE%': esc(ogImage),
-    '%THEME%': p.ceu,
+    '%THEME%': p.fundo,
     '%NOME%': esc(convite.crianca.nome),
-    '%EQUIPE%': esc(convite.equipe.nome.toLocaleUpperCase('pt-BR')),
-    '%NOME_CAIXA%': esc(convite.crianca.nome.toLocaleUpperCase('pt-BR')),
-    '%IDADE%': String(convite.crianca.idade),
-    '%DATA_CURTA%': dataCurta(),
+    '%DATA_LONGA%': esc(dataLonga()),
     '%PALETA%': temaCss(p),
-    '%EMBLEMA%': emblemaSvg(p, { glow: true, attrs: 'class="cv-emb-svg"' }),
-    '%POW%': burstSvg({ text: 'POW!', w: 300, h: 220, seed: 11, spikes: 15, fill: p.amarelo, textFill: p.vermelho, stroke: p.marinho, fontSize: 92 }),
+    '%EMBLEMA%': emblemaSvg(p, { id: 'in' }),
+    '%ESCUDO_PATH%': ESCUDO,
+    '%EMBLEMA_BRASA%': emblemaSvg(p, { id: 'ib', variante: 'brasa', attrs: 'class="in-brasa"' }),
+    '%CIDADE%': cidadeSvg({ fundo: '#0B111C', frente: '#06090F', contorno: '#0F1726', janela: 'rgba(255,196,120,.42)' }, { seed: 4, contorno: false, janela: [1.6, 1.8], chance: 0.16, altura: 1.25 }),
   }
   return {
     name: 'convite-config',

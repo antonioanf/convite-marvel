@@ -2,20 +2,17 @@
  * ============================================================
  *  CONFIGURAÇÃO DO CONVITE
  *  Todo o conteúdo do convite vem deste arquivo.
- *  Para um novo cliente, edite só aqui (e as fotos em /public/fotos).
- *
  *  Procure por "TODO" para ver o que ainda falta preencher.
  * ============================================================
  */
 
 export interface Foto {
-  /** Caminho a partir de /public, ex.: "/fotos/joao-heroi.webp". */
+  /** Caminho a partir de /public, ex.: "/fotos/foto-1.webp". */
   src?: string
-  /** Versão menor (opcional), ex.: "/fotos/joao-heroi-600.webp" */
+  /** Versão menor (opcional), ex.: "/fotos/foto-1-600.webp" */
   srcPequena?: string
   /** Descrição da foto (acessibilidade). */
   alt: string
-  /** Tamanho original em px (evita "pulos" no carregamento). */
   largura?: number
   altura?: number
   /** Ponto de foco do recorte (CSS object-position), ex.: "50% 35%". */
@@ -23,26 +20,27 @@ export interface Foto {
 }
 
 export interface Paleta {
-  /** Vermelho herói (faixa do título, botões principais) */
-  vermelho: string
-  /** Azul royal (pontas da faixa, uniforme) */
-  azul: string
-  /** Azul-marinho: cor do texto principal e dos contornos (no lugar do preto) */
-  marinho: string
-  /** Amarelo herói (explosões, destaques) */
-  amarelo: string
-  /** Azul-céu (fundo) */
-  ceu: string
+  /** Fundo quase preto azulado (céu de tempestade) */
+  fundo: string
+  /** Fundo dos cartões (vidro escuro) */
+  fundo2: string
+  /** Aço (metal escovado, emblema) */
+  aco: string
+  /** Texto principal (branco frio) */
   branco: string
-  /** Ciano neon: só para brilhos de energia */
+  /** Energia elétrica (raios, bordas) */
+  eletrico: string
+  /** Ciano (brilho de energia) */
   ciano: string
-  /** Acentos de cada herói da equipe (Faísca, Tremor, Turbo, Astra) */
-  turquesa: string
-  mostarda: string
+  /** Fogo (acento quente) */
   fogo: string
-  lilas: string
-  /** Dourado (raios de luz, partículas, pôr do sol) */
+  /** Brasa (rachaduras, metal incandescente) */
+  brasa: string
+  /** Dourado (poeira cósmica, brasas do rodapé) */
   dourado: string
+  /** Violeta e turquesa (magia e portal) */
+  violeta: string
+  turquesa: string
 }
 
 export interface ConviteConfig {
@@ -51,10 +49,6 @@ export interface ConviteConfig {
     idade: number
     /** Frase curta que aparece no convite */
     frase: string
-  }
-  equipe: {
-    /** Nome da equipe de heróis, ex.: "Equipe JL" */
-    nome: string
   }
   festa: {
     /** Data e hora no formato ISO com fuso, ex.: "2026-11-26T15:00:00-03:00" */
@@ -82,9 +76,9 @@ export interface ConviteConfig {
   }
   /** Assinatura no rodapé, ex.: "Com carinho, papai e mamãe". Vazio = linha escondida */
   assinatura: string
-  /** Fotos da galeria (quadros de HQ). Desligada: o convite é todo ilustrado. */
+  /** Fotos da galeria. Desligada: o convite é todo gerado por código. */
   galeria: Foto[]
-  /** Tema heroico e efeitos sonoros gerados por código. `false` = convite mudo (o botão some). */
+  /** Trilha e efeitos sonoros gerados por código. `false` = convite mudo (o botão some). */
   musica: boolean
   /** Pix para presentes. `null` = seção escondida. */
   pix: {
@@ -99,13 +93,13 @@ export interface ConviteConfig {
     contagem: boolean
     local: boolean
     galeria: boolean
-    arena: boolean
+    poderes: boolean
     rsvp: boolean
     pix: boolean
   }
   /** Usado nas meta tags (prévia do link no WhatsApp) */
   site: {
-    /** Endereço final publicado, sem barra no final. Ex.: "https://equipe-jl.vercel.app" */
+    /** Endereço final publicado, sem barra no final. Ex.: "https://missao-joao-lucas.vercel.app" */
     url: string
     titulo: string
     descricao: string
@@ -119,9 +113,6 @@ export const convite: ConviteConfig = {
     nome: 'João Lucas',
     idade: 5,
     frase: 'Venha comemorar comigo com muita aventura!',
-  },
-  equipe: {
-    nome: 'Equipe JL',
   },
   festa: {
     dataHora: '2026-11-26T15:00:00-03:00',
@@ -145,35 +136,34 @@ export const convite: ConviteConfig = {
   galeria: [],
   musica: true,
   // TODO: Pix para presentes. Para mostrar a seção, troque `null` por:
-  // { chave: 'sua-chave', tipo: 'Celular', titular: 'Nome do titular', mensagem: 'Sua presença é o nosso maior presente! 💙' }
+  // { chave: 'sua-chave', tipo: 'Celular', titular: 'Nome do titular', mensagem: 'Sua presença é o nosso maior presente.' }
   pix: null,
   paleta: {
-    vermelho: '#E63946',
-    azul: '#1D4ED8',
-    marinho: '#0B1F4D',
-    amarelo: '#FFD60A',
-    ceu: '#BFE3FF',
-    branco: '#FFFFFF',
+    fundo: '#05070C',
+    fundo2: '#0B1220',
+    aco: '#9AA6B6',
+    branco: '#E9EEF5',
+    eletrico: '#7FB8FF',
     ciano: '#22D3EE',
-    turquesa: '#14B8C4',
-    mostarda: '#D9A21B',
     fogo: '#FF7A1A',
-    lilas: '#B794F6',
+    brasa: '#FF3D1A',
     dourado: '#FFB627',
+    violeta: '#8B5CF6',
+    turquesa: '#14B8C4',
   },
   secoes: {
     contagem: true,
     local: true,
     galeria: false,
-    arena: true,
+    poderes: true,
     rsvp: true,
     pix: true,
   },
   site: {
     // TODO: endereço publicado (sem barra no final). Sem ele, a imagem da prévia no WhatsApp não aparece.
     url: '',
-    titulo: 'João Lucas faz 5 anos · Junte-se à Equipe JL!',
-    descricao: 'Quinta-feira, 26 de novembro de 2026 · Enjoy Kids · Shopping Liv Mall. Venha comemorar comigo com muita aventura!',
+    titulo: 'João Lucas · 5 anos · Uma nova missão',
+    descricao: 'Quinta-feira, 26 de novembro de 2026, às 15h · Enjoy Kids · Shopping Liv Mall. Venha comemorar comigo com muita aventura!',
     imagemOg: '/og.jpg',
   },
 }
