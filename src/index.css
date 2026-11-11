@@ -210,6 +210,19 @@
       opacity: 1;
     }
   }
+  /* modo leve: nuvens e feixes sem desfoque */
+  html.lite .nuvens,
+  html.lite .feixes {
+    filter: none;
+  }
+  html.lite .feixes {
+    opacity: 0.6;
+  }
+  /* enquanto um poder está na tela, o fundo congela */
+  html.poder-ativo .cena *,
+  html.poder-ativo .grao {
+    animation-play-state: paused !important;
+  }
   .relampago {
     position: absolute;
     inset: 0;
@@ -607,6 +620,18 @@
   }
   .titulo-hero {
     position: relative;
+  }
+  /* a caixa do hero vira uma camada própria: o scroll só move/esmaece, sem repintar o título */
+  .hero-caixa {
+    will-change: transform, opacity;
+  }
+  .titulo-arcos {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
   }
   .titulo-hero .nome {
     font-size: clamp(76px, 25vw, 112px);

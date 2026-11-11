@@ -1,10 +1,12 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { gerarRaio } from '../../lib/fx/raio'
 import { perf } from '../../lib/perf'
+import { fundo } from '../../lib/fx/fundo'
 
 /**
- * "JOÃO LUCAS · 5 ANOS" em letras de metal (SVG), com eletricidade correndo DENTRO das letras
- * (arcos fractais recortados pelo próprio texto) e, de vez em quando, um arco que salta por cima.
+ * "JOÃO LUCAS · 5 ANOS" em letras de metal (SVG), com eletricidade correndo pelas letras (arcos
+ * fractais entre pontos do próprio metal) e, de vez em quando, um arco longo que atravessa o nome.
+ * Os arcos ficam num SVG separado, sem filtro: redesenhá-los não repinta o título (que tem sombra).
  * `acender()` faz o metal brilhar como se tivesse sido atingido por um raio.
  * Decorativo (aria-hidden): o texto real fica num <h1> para leitores de tela.
  */
@@ -90,9 +92,20 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
       const pts = mapear()
       if (!pts.length) return
       let tick = 0
-      id = window.setInterval(() => {
+      let ultimo = 0
+      const passo = () => {
+        id = window.setTimeout(passo, perf.isLite() ? 140 : 70)
+        if (fundo.pausado() || document.hidden) {
+          if (ultimo) {
+            g.innerHTML = ''
+            gf.innerHTML = ''
+            ultimo = 0
+          }
+          return
+        }
+        ultimo = 1
         tick++
-        const n = perf.isLite() ? 2 : 4
+        const n = perf.isLite() ? 2 : 4 // modo leve: menos arcos e mais espaçados no tempo
         let s = ''
         for (let i = 0; i < n; i++) s += camadas(arco(pts, 14, 46))
         g.innerHTML = s
@@ -100,11 +113,12 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
         // a cada ~1,5 s um arco longo atravessa o nome e some rápido
         if (tick % 22 === 0) gf.innerHTML = camadas(arco(pts, 90, 200), 1.2)
         else if (tick % 22 === 2) gf.innerHTML = ''
-      }, 70)
+      }
+      passo()
     })
     return () => {
       cancelado = true
-      clearInterval(id)
+      clearTimeout(id)
       g.innerHTML = ''
       gf.innerHTML = ''
     }
@@ -113,6 +127,7 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
   const t1 = { x: 200, y: 100, textAnchor: 'middle' as const, fontFamily: FONTE, fontSize: 104, textLength: 380, lengthAdjust: 'spacingAndGlyphs' as const }
   const t2 = { x: 200, y: 174, textAnchor: 'middle' as const, fontFamily: FONTE, fontSize: 54, letterSpacing: 9 }
   return (
+    <div className="relative">
     <svg ref={svg} viewBox="0 0 400 186" className="titulo-svg block w-full overflow-visible" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="tm1" gradientUnits="userSpaceOnUse" x1="0" y1="28" x2="0" y2="100">
@@ -155,8 +170,11 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
       <g ref={luz} opacity="0" clipPath="url(#tclip)">
         <rect x="0" y="0" width="400" height="186" fill="#DCEBFF" />
       </g>
+    </svg>
+    <svg viewBox="0 0 400 186" className="titulo-arcos" aria-hidden="true" focusable="false">
       <g ref={dentro} fill="none" strokeLinecap="round" strokeLinejoin="round" />
       <g ref={fora} fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+    </div>
   )
 })

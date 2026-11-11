@@ -7,6 +7,7 @@ import { perf } from '../perf'
 import { sfx } from '../sfx'
 import { desenharRaio2D, gerarRaio, type Raio } from './raio'
 import { CLARAO_MAX, podeClarear } from './clarao'
+import { fundo } from './fundo'
 
 interface P {
   x: number
@@ -51,7 +52,6 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
   const poeira = sprite([[0, 'rgba(200,215,240,.9)'], [0.4, 'rgba(160,180,220,.25)'], [1, 'rgba(120,140,200,0)']])
   const bokeh = sprite([[0, 'rgba(190,210,245,.35)'], [0.7, 'rgba(170,195,240,.22)'], [0.85, 'rgba(170,195,240,.08)'], [1, 'rgba(170,195,240,0)']])
 
-  const lite = perf.isLite()
   const nova = (brasa: boolean, inicio = false): P => {
     const z = Math.random()
     return {
@@ -66,10 +66,22 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
       brasa,
     }
   }
-  const ps: P[] = [
-    ...Array.from({ length: lite ? 10 : 18 }, () => nova(true, true)),
-    ...Array.from({ length: lite ? 16 : 30 }, () => nova(false, true)),
-  ]
+  // modo leve: menos brasas e menos poeira (as de longe somem primeiro)
+  const quantos = () => (perf.isLite() ? { brasas: 8, poeira: 12 } : { brasas: 18, poeira: 30 })
+  const ps: P[] = []
+  const ajustar = () => {
+    const q = quantos()
+    const brasas = ps.filter((p) => p.brasa)
+    const poeiras = ps.filter((p) => !p.brasa).sort((x, y) => y.z - x.z)
+    ps.length = 0
+    ps.push(...brasas.slice(0, q.brasas), ...poeiras.slice(0, q.poeira))
+    while (ps.filter((p) => p.brasa).length < q.brasas) ps.push(nova(true, true))
+    while (ps.filter((p) => !p.brasa).length < q.poeira) ps.push(nova(false, true))
+  }
+  ajustar()
+  const offLite = perf.subscribe(ajustar)
+  // mede o FPS nos primeiros segundos: se o aparelho não aguentar, liga o modo leve sozinho
+  let medindo = { n: 0, t0: 0 }
 
   let raio: { r: Raio; t0: number } | null = null
   let ultimo = performance.now()
@@ -80,6 +92,15 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
     raf = requestAnimationFrame(frame)
     const dt = Math.min(0.05, (now - ultimo) / 1000)
     ultimo = now
+    if (medindo.n >= 0) {
+      if (!medindo.t0) medindo.t0 = now
+      medindo.n++
+      if (now - medindo.t0 > 4000) {
+        const fps = (medindo.n * 1000) / (now - medindo.t0)
+        if (fps < 45) perf.downgrade(`fundo a ${fps.toFixed(0)} fps`)
+        medindo = { n: -1, t0: 0 }
+      }
+    }
     const t = now / 1000
     ctx.clearRect(0, 0, W, H)
     if (raio) {
@@ -147,20 +168,34 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
     raf = requestAnimationFrame(frame)
     timer = window.setTimeout(relampago, 4000)
   }
+  // pausa enquanto um poder está ativo ou a aba está em segundo plano
+  let porPoder = false
+  let porAba = false
+  const aplicar = () => {
+    const p = porPoder || porAba
+    ativo = !p
+    cancelAnimationFrame(raf)
+    if (!p && !perf.reducedMotion) {
+      ultimo = performance.now()
+      raf = requestAnimationFrame(frame)
+    }
+  }
+  const offFundo = fundo.ouvir((p) => {
+    porPoder = p
+    aplicar()
+  })
   return {
     pausar(p: boolean) {
-      ativo = !p
-      if (p) cancelAnimationFrame(raf)
-      else if (!perf.reducedMotion) {
-        ultimo = performance.now()
-        raf = requestAnimationFrame(frame)
-      }
+      porAba = p
+      aplicar()
     },
     parar() {
       ativo = false
       cancelAnimationFrame(raf)
       clearTimeout(timer)
       removeEventListener('resize', resize)
+      offLite()
+      offFundo()
     },
   }
 }

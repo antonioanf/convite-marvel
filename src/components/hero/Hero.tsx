@@ -68,7 +68,7 @@ export function Hero() {
 
   return (
     <section ref={section} id="inicio" aria-labelledby="t-inicio" className="hero wrap pb-16 pt-[max(28px,env(safe-area-inset-top))]">
-      <div ref={caixa} className="text-center">
+      <div ref={caixa} className="hero-caixa text-center">
         <motion.p custom={0.1} variants={surge} initial="hide" animate={anim} className="rotulo pl-[.42em]">
           Uma nova missão
         </motion.p>
