@@ -11,18 +11,18 @@ export function mountDesktop() {
   const src = new URL(location.href)
   const c = convite.crianca
   root.innerHTML = `
-    <div class="ceu" aria-hidden="true"></div>
+    <div class="cena" aria-hidden="true"></div>
     <main class="desk-shell">
       <div class="desk-side" style="text-align:right">
-        <p class="label">${dataCurta}</p>
-        <p class="hq-pop" style="margin-top:10px;font-size:76px;color:var(--color-amarelo)">${c.nome}</p>
-        <p style="margin-top:12px;font-size:20px;font-weight:800;color:var(--color-marinho)">vai fazer ${c.idade} anos · ${convite.equipe.nome}</p>
+        <p class="rotulo">${dataCurta}</p>
+        <p class="display metal" style="margin-top:10px;font-size:88px">${c.nome}</p>
+        <p style="margin-top:12px;font-size:20px;font-weight:800;color:var(--color-branco)">vai fazer ${c.idade} anos</p>
       </div>
       <div class="desk-phone"><iframe title="Convite de ${c.nome}" src="${src.href}"
         allow="autoplay; clipboard-write; vibrate"></iframe></div>
-      <div class="desk-side" style="color:var(--color-tinta-2);font-size:17px;font-weight:700;line-height:1.6">
-        <p class="label">Feito para o celular</p>
-        <p style="margin-top:10px">Abra o link no WhatsApp para a experiência completa: toque nos heróis, use os super poderes e derrote os robôs!</p>
+      <div class="desk-side" style="color:var(--color-branco-2);font-size:16px;font-weight:500;line-height:1.6">
+        <p class="rotulo">Feito para o celular</p>
+        <p style="margin-top:10px">Abra o link no WhatsApp para a experiência completa: use os poderes e aceite a missão.</p>
       </div>
     </main>`
   const phone = root.querySelector<HTMLElement>('.desk-phone')!

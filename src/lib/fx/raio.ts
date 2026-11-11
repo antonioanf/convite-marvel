@@ -89,7 +89,7 @@ export function desenharRaio2D(ctx: CanvasRenderingContext2D, r: Raio, t: number
   ctx.globalCompositeOperation = 'lighter'
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
-  const [cr, cg, cb] = cor
+  const [cr, cg] = cor
   for (const g of r.galhos) {
     const a = envelope(t, g.vida)
     if (a <= 0.01) continue

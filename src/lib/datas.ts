@@ -33,3 +33,12 @@ export function partyPhase(nowMs: number): Phase {
 export function diasAte(nowMs: number) {
   return Math.max(0, Math.floor((start.getTime() - nowMs) / 86_400_000))
 }
+
+/** "26 DE NOVEMBRO · 15H" (estilo trailer) */
+export const dataTrailer = (() => {
+  const d = diaMes.toLocaleUpperCase('pt-BR')
+  return hora ? `${d} · ${hora.replace(':00', 'H').replace(':', 'H')}` : d
+})()
+/** "26/11" e "15h" */
+export const diaBarraMes = fmt({ day: '2-digit', month: '2-digit' })
+export const horaCurta = hora ? hora.replace(':00', 'h').replace(':', 'h') : null

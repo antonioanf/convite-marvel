@@ -1,21 +1,76 @@
-import { useEffect } from 'react'
-import { useOpened } from '../hooks/useStores'
-import { initScroll } from '../lib/scroll'
+import { memo, useEffect } from 'react'
+import { useLite, useOpened } from '../hooks/useStores'
+import { Cena } from '../components/cena/Cena'
+import { Hero } from '../components/hero/Hero'
+import { BottomBar } from '../components/ui/BottomBar'
+import { ProgressBar } from '../components/fun/ProgressBar'
+import { perf } from '../lib/perf'
+import { initScroll, gsap, ScrollTrigger } from '../lib/scroll'
 import { appState } from '../lib/appState'
 
-// (etapa da abertura) App provisório: só o fundo e o título. O hero completo entra na próxima etapa.
+/** As seções não dependem de "aberto": ficam memorizadas para a abertura não redesenhar o convite inteiro. */
+const Sections = memo(function Sections() {
+  return (
+    <>
+      <Hero />
+    </>
+  )
+})
+
 export function App() {
   const opened = useOpened()
+  const lite = useLite()
+
   useEffect(() => {
-    initScroll()
+    document.documentElement.classList.toggle('lite', lite)
+  }, [lite])
+
+  useEffect(() => {
+    const lenis = initScroll()
+    lenis.stop()
     appState.mounted()
+    // animações CSS das seções fora da tela ficam pausadas (pausa centralizada aqui)
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.target.classList.toggle('is-offscreen', !e.isIntersecting)),
+      { rootMargin: '120px 0px' },
+    )
+    document.querySelectorAll('.page > section, .page > footer').forEach((el) => io.observe(el))
+    return () => io.disconnect()
   }, [])
+
+  useEffect(() => {
+    if (!opened) return
+    initScroll().start()
+    let ctx: gsap.Context | undefined
+    if (!perf.reducedMotion) {
+      ctx = gsap.context(() => {
+        gsap.utils.toArray<HTMLElement>('.reveal').forEach((el) => {
+          gsap.fromTo(el, { opacity: 0, y: 36 }, { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
+        })
+      })
+    }
+    let rt = 0
+    const ro = new ResizeObserver(() => {
+      clearTimeout(rt)
+      rt = window.setTimeout(() => ScrollTrigger.refresh(), 200)
+    })
+    const page = document.querySelector('.page')
+    if (page) ro.observe(page)
+    return () => {
+      clearTimeout(rt)
+      ro.disconnect()
+      ctx?.revert()
+    }
+  }, [opened])
+
   return (
-    <main className="page" aria-hidden={!opened} style={{ minHeight: '100svh', background: 'radial-gradient(120% 60% at 50% 0%, #142038, #05070C 65%)' }}>
-      <section id="inicio" style={{ padding: '30vh 20px 0', textAlign: 'center' }}>
-        <h1 style={{ margin: 0, font: "400 72px/.9 'Bebas Neue', sans-serif", letterSpacing: '.04em', color: '#E9EEF5' }}>João Lucas</h1>
-        <p style={{ margin: '14px 0 0', font: "600 13px/1 Inter, sans-serif", letterSpacing: '.32em', color: '#7FB8FF' }}>5 ANOS · UMA NOVA MISSÃO</p>
-      </section>
-    </main>
+    <>
+      <Cena />
+      <ProgressBar />
+      <main className="page" aria-hidden={!opened}>
+        <Sections />
+      </main>
+      <BottomBar />
+    </>
   )
 }
