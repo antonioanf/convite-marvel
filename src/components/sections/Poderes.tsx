@@ -143,18 +143,18 @@ export function Poderes() {
   }
 
   return (
-    <section ref={secao} id="poderes" aria-labelledby="t-poderes" className="wrap secao acc-dourado">
+    <section ref={secao} id="poderes" aria-labelledby="t-poderes" className="wrap secao compacta acc-dourado">
       <SectionTitle id="t-poderes" index={indice('poderes')} kicker="Treinamento de agente" title="Poderes" />
-      <Card className="reveal mb-3">
-        <p className="px-4 pt-4 text-[15px] leading-relaxed txt-2">Faça os gestos em qualquer lugar do convite, ou toque em Disparar. Ative os 6 para destravar a sobrecarga.</p>
-        <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-3.5">
-          <span className="rotulo text-[12px] acc-txt">Poderes</span>
-          <span className="mono text-[22px] leading-none text-branco" aria-live="polite">
+      <Card className="reveal mb-(--gap)">
+        <p className="px-(--pad) pt-(--pad) t-texto leading-relaxed txt-2">Faça os gestos em qualquer lugar do convite, ou toque em Disparar. Ative os 6 para destravar a sobrecarga.</p>
+        <div className="flex items-center justify-between gap-3 px-(--pad) pb-2.5 pt-3">
+          <span className="rotulo t-rotulo acc-txt">Poderes</span>
+          <span className="mono t-contador leading-none text-branco" aria-live="polite">
             {total}/6
             <span className="sr-only"> poderes ativados</span>
           </span>
         </div>
-        <div className="medidor px-4 pb-4" aria-hidden="true">
+        <div className="medidor px-(--pad) pb-(--pad)" aria-hidden="true">
           {PODERES.map((p) => (
             <span key={p.id} className={`${p.acc} ${poderes.tem(p.id) ? 'on' : ''}`} />
           ))}
@@ -165,17 +165,17 @@ export function Poderes() {
         {PODERES.map((p) => (
           <Card key={p.id} acc={p.acc} className={`reveal poder ${poderes.tem(p.id) ? 'ativado' : ''}`}>
             <Palco id={p.id} />
-            <div className="flex flex-1 flex-col gap-2 p-3">
+            <div className="flex flex-1 flex-col gap-1.5 p-(--pad-mini)">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="display text-[25px] leading-[0.95] text-branco">{p.nome}</h3>
+                <h3 className="display t-poder leading-[0.95] text-branco">{p.nome}</h3>
                 {poderes.tem(p.id) && (
-                  <span className="mono mt-1 text-[11px] acc-txt" aria-label="ativado">
+                  <span className="mono mt-1 t-rotulo acc-txt" aria-label="ativado">
                     OK
                   </span>
                 )}
               </div>
-              <p className="flex-1 text-[13.5px] leading-snug txt-2">{p.gesto}</p>
-              <PressButton variant="soft" className="!min-h-[44px] w-full !px-2 !text-[12px] !tracking-[0.18em]" disabled={!!rodando} onClick={() => disparar(p.id)}>
+              <p className="flex-1 t-dica leading-snug txt-2">{p.gesto}</p>
+              <PressButton variant="soft" className="!min-h-(--btn-h-mini) w-full !px-2 !text-(length:--fs-rotulo) !tracking-[0.18em]" disabled={!!rodando} onClick={() => disparar(p.id)}>
                 {rodando === p.id ? 'Ativando' : 'Disparar'}
               </PressButton>
             </div>
@@ -183,10 +183,10 @@ export function Poderes() {
         ))}
       </div>
 
-      <Card acc="acc-roxo" className="reveal mt-3 p-4 text-center">
-        <p className="rotulo text-[11px] acc-txt">Sobrecarga</p>
-        <p className="mt-1.5 text-[15px] leading-snug txt-2">{total < 6 ? `Ative os 6 poderes para destravar (faltam ${6 - total}).` : 'Tudo destravado. Todos os poderes juntos.'}</p>
-        <PressButton className="btn-sobrecarga mt-3 w-full" disabled={total < 6 || !!rodando} onClick={sobrecarga}>
+      <Card acc="acc-roxo" className="reveal mt-(--gap) p-(--pad) text-center">
+        <p className="rotulo t-rotulo acc-txt">Sobrecarga</p>
+        <p className="mt-1.5 t-texto leading-snug txt-2">{total < 6 ? `Ative os 6 poderes para destravar (faltam ${6 - total}).` : 'Tudo destravado. Todos os poderes juntos.'}</p>
+        <PressButton className="btn-sobrecarga mt-2.5 w-full" disabled={total < 6 || !!rodando} onClick={sobrecarga}>
           {total < 6 ? 'Bloqueada' : rodando === 'sobrecarga' ? 'Sobrecarga' : 'Ativar sobrecarga'}
         </PressButton>
       </Card>

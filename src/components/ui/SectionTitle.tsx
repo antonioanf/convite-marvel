@@ -10,7 +10,7 @@ export function SectionTitle({ kicker, title, id, index }: { kicker: string; tit
         <span className="linha" aria-hidden="true" />
       </div>
       {index && (
-        <span className="mono shrink-0 pb-2 text-[13px] tracking-[0.2em] text-branco" aria-hidden="true">
+        <span className="mono shrink-0 pb-2 text-[length:var(--fs-rotulo,13px)] tracking-[0.2em] text-branco" aria-hidden="true">
           {index}
         </span>
       )}

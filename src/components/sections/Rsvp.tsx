@@ -37,16 +37,16 @@ function Credencial({ nome }: { nome: string }) {
   return (
     <div className="credencial" role="img" aria-label={`Credencial de agente de ${nome}: ${missaoTxt}, aprovado.`}>
       <span className="reflexo" aria-hidden="true" />
-      <div className="relative flex items-center gap-4" aria-hidden="true">
-        <Emblema size={68} id="cred" className="shrink-0 drop-shadow-[0_0_14px_rgb(255_106_0/.5)]" />
+      <div className="relative flex items-center gap-3.5" aria-hidden="true">
+        <Emblema size={68} id="cred" className="!h-[calc(var(--emblema)*1.12)] !w-(--emblema) shrink-0 drop-shadow-[0_0_14px_rgb(255_106_0/.5)]" />
         <div className="min-w-0">
-          <p className="rotulo text-[10px] text-violeta-txt">Credencial de agente</p>
-          <p className="display metal mt-1 truncate text-[38px]">{nome}</p>
-          <p className="mono mt-1 text-[16px] text-dourado">{missaoTxt}</p>
+          <p className="rotulo t-rotulo tracking-[0.14em] whitespace-nowrap text-violeta-txt">Credencial de agente</p>
+          <p className="display metal mt-1 truncate t-destaque">{nome}</p>
+          <p className="mono mt-1 t-nota text-dourado">{missaoTxt}</p>
         </div>
       </div>
-      <div className="relative mt-4 flex items-end justify-between" aria-hidden="true">
-        <p className="mono text-[13px] txt-2">Nº {numeroCredencial(nome)}</p>
+      <div className="relative mt-3 flex items-end justify-between" aria-hidden="true">
+        <p className="mono t-rotulo txt-2">Nº {numeroCredencial(nome)}</p>
         <span className="selo-aprovado">Aprovado</span>
       </div>
     </div>
@@ -121,14 +121,14 @@ export function Rsvp() {
   }
 
   return (
-    <section id="confirmar" aria-labelledby="t-rsvp" className="wrap secao acc-roxo">
+    <section id="confirmar" aria-labelledby="t-rsvp" className="wrap secao compacta acc-roxo">
       <SectionTitle id="t-rsvp" index={indice('confirmar')} kicker="Confirmação de presença" title="Aceitar missão" />
       <div ref={cartao}>
-        <Card className="reveal p-5">
+        <Card className="reveal p-(--pad-grande)">
           <AnimatePresence mode="wait" initial={false}>
             {etapa === 'form' ? (
-              <motion.form key="form" noValidate onSubmit={enviar} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25 }} className="flex flex-col gap-5">
-                <p className="text-[16px] font-medium leading-relaxed txt-2">
+              <motion.form key="form" noValidate onSubmit={enviar} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25 }} className="flex flex-col gap-4">
+                <p className="t-texto font-medium leading-relaxed txt-2">
                   {!prazo ? (
                     <>Digite seu nome para receber a credencial de agente e confirmar presença.</>
                   ) : passouPrazo ? (
@@ -140,7 +140,7 @@ export function Rsvp() {
                   )}
                 </p>
                 <motion.div key={tremor} animate={tremor ? { x: [0, -10, 10, -6, 6, 0] } : undefined} transition={{ duration: 0.4 }}>
-                  <label htmlFor={`${id}-nome`} className="rotulo mb-2 block text-[11px]">
+                  <label htmlFor={`${id}-nome`} className="rotulo mb-1.5 block t-rotulo">
                     Seu nome
                   </label>
                   <input
@@ -163,19 +163,19 @@ export function Rsvp() {
                     className="field"
                   />
                   {erro && (
-                    <p id={`${id}-erro`} role="alert" className="mt-2 text-[15px] font-semibold text-vermelho-txt">
+                    <p id={`${id}-erro`} role="alert" className="mt-2 t-texto font-semibold text-vermelho-txt">
                       {erro}
                     </p>
                   )}
                 </motion.div>
-                <PressButton type="submit" className="h-[60px] w-full">
+                <PressButton type="submit" className="h-(--btn-h-grande) w-full">
                   Aceitar missão
                 </PressButton>
-                <p className="-mt-2 text-center text-[14px] font-medium txt-2">{semWhats ? 'A confirmação pelo WhatsApp ainda não foi configurada.' : 'Depois abrimos o WhatsApp com a mensagem pronta.'}</p>
+                <p className="-mt-2 text-center t-nota font-medium txt-2">{semWhats ? 'A confirmação pelo WhatsApp ainda não foi configurada.' : 'Depois abrimos o WhatsApp com a mensagem pronta.'}</p>
               </motion.form>
             ) : etapa === 'portal' ? (
-              <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid min-h-[220px] place-items-center text-center" role="status">
-                <p className="rotulo text-[12px] acc-txt">Abrindo portal…</p>
+              <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid min-h-[184px] place-items-center text-center" role="status">
+                <p className="rotulo t-rotulo acc-txt">Abrindo portal…</p>
               </motion.div>
             ) : (
               <motion.div
@@ -183,10 +183,10 @@ export function Rsvp() {
                 initial={perf.reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.3, rotate: -8, y: 30 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0, y: 0 }}
                 transition={{ duration: 0.9, ease: [0.2, 0.9, 0.2, 1.05] }}
-                className="flex flex-col gap-4"
+                className="flex flex-col gap-(--pad)"
                 role="status"
               >
-                <p className="text-center text-[17px] font-bold text-branco">Missão aceita, {aceito.split(' ')[0]}!</p>
+                <p className="text-center t-forte font-bold text-branco">Missão aceita, {aceito.split(' ')[0]}!</p>
                 <Credencial nome={aceito} />
                 <PressButton variant="soft" className="w-full" onClick={salvar} disabled={salvando}>
                   <Icon name="baixar" size={20} />
@@ -194,7 +194,7 @@ export function Rsvp() {
                 </PressButton>
                 {img && (
                   <div className="flex flex-col items-center gap-2 text-center" data-sem-gesto>
-                    <p className="text-[14px] font-medium txt-2">{img.como === 'baixado' ? 'Credencial baixada. Se não apareceu, toque e segure a imagem para salvar:' : 'Toque e segure a imagem para salvar:'}</p>
+                    <p className="t-nota font-medium txt-2">{img.como === 'baixado' ? 'Credencial baixada. Se não apareceu, toque e segure a imagem para salvar:' : 'Toque e segure a imagem para salvar:'}</p>
                     <img src={img.url} alt={`Credencial de agente de ${aceito}`} className="w-full rounded-lg" style={{ WebkitTouchCallout: 'default', userSelect: 'auto' }} />
                   </div>
                 )}
@@ -204,11 +204,11 @@ export function Rsvp() {
                     Abrir WhatsApp
                   </PressLink>
                 ) : (
-                  <p className="rounded-md border border-[rgb(var(--dourado-rgb)/.5)] bg-[rgb(var(--dourado-rgb)/.08)] px-4 py-3 text-center text-[15px] font-medium text-branco" role="note">
+                  <p className="rounded-md border border-[rgb(var(--dourado-rgb)/.5)] bg-[rgb(var(--dourado-rgb)/.08)] px-3.5 py-2.5 text-center t-texto font-medium text-branco" role="note">
                     O WhatsApp para confirmação ainda não foi configurado. Avise a família do {primeiro} por mensagem.
                   </p>
                 )}
-                <button type="button" onClick={editar} className="min-h-12 px-4 text-[15px] font-semibold text-roxo-txt underline underline-offset-4">
+                <button type="button" onClick={editar} className="min-h-11 px-4 t-texto font-semibold text-roxo-txt underline underline-offset-4">
                   Corrigir o nome
                 </button>
               </motion.div>

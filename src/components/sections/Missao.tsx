@@ -136,32 +136,32 @@ export function Missao() {
   const mapa = f.linkMapa || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([f.local.replace('·', ''), f.endereco].filter(Boolean).join(' '))}`
 
   return (
-    <section id="missao" aria-labelledby="t-missao" className="wrap secao acc-vermelho">
+    <section id="missao" aria-labelledby="t-missao" className="wrap secao compacta acc-vermelho">
       <SectionTitle id="t-missao" index={indice('missao')} kicker="Quando e onde" title="A missão" />
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-(--gap)">
         <Card className="reveal">
           <div className="cartao-cab">
-            <span className="rotulo text-[11px] acc-txt">Dados da missão</span>
-            <span className="mono text-[12px] tracking-[0.18em] txt-2" aria-hidden="true">
+            <span className="rotulo t-rotulo acc-txt">Dados da missão</span>
+            <span className="mono t-rotulo tracking-[0.18em] txt-2" aria-hidden="true">
               {prog < 1 ? 'DECODIFICANDO' : 'CONFIRMADO'}
             </span>
           </div>
-          <div ref={bloco} className="relative overflow-hidden p-4">
+          <div ref={bloco} className="relative overflow-hidden p-(--pad)">
             <p className="sr-only">
               {diaSemana}, {diaMes} de {ano}
               {hora ? `, às ${hora}` : ', horário a definir'}
             </p>
             <div className="grid grid-cols-[1fr_auto] items-end gap-4">
               <div>
-                <p className="rotulo text-[11px]">Data</p>
-                <Codigo texto={dataCurtaBarra} progresso={prog} className="mono mt-1.5 text-[clamp(24px,7.4vw,32px)] leading-none" />
+                <p className="rotulo t-rotulo">Data</p>
+                <Codigo texto={dataCurtaBarra} progresso={prog} className="mono mt-1.5 t-numero leading-none" />
               </div>
               <div className="text-right">
-                <p className="rotulo text-[11px]">Horário</p>
-                <Codigo texto={hora ?? 'A DEFINIR'} progresso={prog} className="mono mt-1.5 text-[clamp(24px,7.4vw,32px)] leading-none" />
+                <p className="rotulo t-rotulo">Horário</p>
+                <Codigo texto={hora ?? 'A DEFINIR'} progresso={prog} className="mono mt-1.5 t-numero leading-none" />
               </div>
             </div>
-            <p className="mt-3 text-[16px] font-semibold text-branco" aria-hidden="true">
+            <p className="mt-2.5 t-forte font-semibold text-branco" aria-hidden="true">
               {diaSemana}, {diaMes}
             </p>
             <div ref={feixe} className="feixe-decod" aria-hidden="true" />
@@ -170,18 +170,18 @@ export function Missao() {
 
         <Card className="reveal">
           <div className="cartao-cab">
-            <span className="rotulo text-[11px] acc-txt">Local</span>
+            <span className="rotulo t-rotulo acc-txt">Local</span>
             <span className="ico">
               <Icon name="pin" />
             </span>
           </div>
-          <div className="flex flex-col gap-3 p-4">
+          <div className="flex flex-col gap-(--gap) p-(--pad)">
             <div>
-              <p className="display text-[38px] text-branco">{f.local}</p>
-              <p className="mt-1 text-[16px] font-medium txt-2">{f.endereco || 'Endereço completo em breve'}</p>
+              <p className="display t-destaque text-branco">{f.local}</p>
+              <p className="mt-1 t-texto font-medium txt-2">{f.endereco || 'Endereço completo em breve'}</p>
             </div>
             <MapaTatico />
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               <PressLink href={mapa} target="_blank" rel="noopener" className="w-full">
                 <Icon name="seta" size={20} />
                 Como chegar
@@ -197,10 +197,10 @@ export function Missao() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="grid grid-cols-1 gap-2.5 overflow-hidden"
+                    className="grid grid-cols-1 gap-2 overflow-hidden"
                   >
                     {isApple ? [ics, gcal] : [gcal, ics]}
-                    {!f.horarioDefinido && <p className="px-2 text-center text-[13px] font-medium txt-2">Entra como evento de dia inteiro até o horário ser confirmado.</p>}
+                    {!f.horarioDefinido && <p className="px-2 text-center t-nota font-medium txt-2">Entra como evento de dia inteiro até o horário ser confirmado.</p>}
                   </motion.div>
                 )}
               </AnimatePresence>

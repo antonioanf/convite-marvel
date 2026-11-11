@@ -66,6 +66,12 @@ Do "ROLE" para baixo (contagem, missão, poderes, aceitar missão, rodapé) há 
 - **Como aparece:** camada fixa atrás das seções (um `<img>`, sem `background-attachment: fixed`, que o iPhone ignora), com parallax leve só com `transform` (desligado com `prefers-reduced-motion`). Por cima: `#05070D` a 68% + vinheta. A emenda com o hero é um degradê de 200 px. Os títulos de seção têm uma faixa escura que se dissolve nas bordas; os cartões continuam 90% opacos. Os poderes continuam por cima de tudo.
 - `node scripts/fundo.mjs` tira os prints (transição e duas seções, iPhone 13 e 360x740) e confere que a imagem não baixa antes de rolar.
 
+## 3c. Tamanhos das seções (escala compacta)
+
+Missão, Poderes (com a Sobrecarga) e Aceitar missão usam a classe `compacta`: fontes, ícones, botões, paddings, espaços entre cartões e margens ~15–20% menores que o resto do convite. Todos os valores ficam num só bloco, `.compacta { --fs-…; --btn-h; --pad; … }` em `src/index.css`. Para ajustar, mude ali. Os componentes usam as classes `t-titulo`, `t-texto`, `t-rotulo`… e as variáveis (`p-(--pad)`, `gap-(--gap)`); as regras base (`.btn`, `.field`, `.ico`, `.secao-titulo`…) leem as mesmas variáveis com o tamanho antigo como padrão, por isso contagem, presentes e barra de baixo não mudaram.
+
+Pisos: texto de leitura ≥ 15px, rótulos ≥ 12px, botões e áreas de toque ≥ 44px, campo de nome 16px (abaixo disso o iPhone dá zoom ao digitar). `node scripts/compacto.mjs <rótulo> [url]` tira os prints dessas seções e da credencial (iPhone 13 e 360x740) e lista fontes, alturas de toque e textos que quebram ou transbordam.
+
 ## 4. Os poderes
 
 Funcionam no convite inteiro, menos sobre campos de texto, botões e links. Arrastar na vertical continua rolando a página.
@@ -104,6 +110,7 @@ node scripts/ver.mjs                   # prints da abertura, hero e seções →
 node scripts/contraste.mjs [--aparelho=360x740]   # contraste de todo texto contra o pior pixel do fundo
 node scripts/comparar.mjs <rótulo>      # prints do hero e das seções no iPhone 13 e no 360x740 → screenshots/<rótulo>/
 node scripts/fundo.mjs                 # prints da imagem de fundo das seções + confere o carregamento preguiçoso
+node scripts/compacto.mjs <rótulo> [url]   # prints de Missão/Poderes/Aceitar missão + fontes, toque e quebras de linha
 node scripts/lighthouse.mjs <rótulo> <url> <cli-do-lighthouse>   # uma rodada do Lighthouse (celular)
 node scripts/quadros.mjs [--gestos] [--2d] [poder]   # cada poder quadro a quadro → screenshots/quadros/
 node scripts/folha.mjs                 # junta os quadros de cada poder numa folha (_folha-<poder>.png)
