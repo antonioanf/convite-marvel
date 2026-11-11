@@ -1,6 +1,7 @@
 import { memo, useEffect } from 'react'
 import { useLite, useOpened } from '../hooks/useStores'
 import { Cena } from '../components/cena/Cena'
+import { FundoSecoes } from '../components/cena/FundoSecoes'
 import { Hero } from '../components/hero/Hero'
 import { Countdown } from '../components/sections/Countdown'
 import { Missao } from '../components/sections/Missao'
@@ -26,6 +27,8 @@ const Sections = memo(function Sections() {
   return (
     <>
       <Hero />
+      {/* emenda suave do hero (escuro) para a imagem de fundo das seções */}
+      <div className="transicao-fundo" aria-hidden="true" />
       {s.contagem && <Countdown />}
       {s.local && <Missao />}
       {s.poderes && <Poderes />}
@@ -88,6 +91,7 @@ export function App() {
   return (
     <>
       <Cena />
+      <FundoSecoes />
       <ProgressBar />
       <main className="page" aria-hidden={!opened}>
         <Sections />

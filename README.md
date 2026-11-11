@@ -57,6 +57,15 @@ Os tons de **texto** das cores escuras demais para letra pequena (vermelho, roxo
 
 `node scripts/contraste.mjs [--aparelho=360x740]` mede **todo** texto (hero, títulos, cartões, rodapé) contra o **pior pixel** do fundo — com as animações rodando e o texto no alto, no meio e embaixo da tela. Mínimo 4,5:1 (texto normal) e 3:1 (título grande). Resultado atual: 41 de 41 no iPhone 13 e no 360x740 (antes da reforma: 11 e 12 abaixo do mínimo).
 
+## 3b. Imagem de fundo das seções
+
+Do "ROLE" para baixo (contagem, missão, poderes, aceitar missão, rodapé) há uma imagem atrás das seções. O hero e a abertura não mudam.
+
+- **Origem:** `originais/fundo.jpg` (ou `.png`). Para trocar, substitua o arquivo e rode `npm run fotos`: gera `public/fotos/fundo-1200.webp` e `fundo-750.webp` (qualidade ~72, no máximo ~200 KB cada; se passar, baixa a qualidade). A imagem atual tem só 626 px de largura e é ampliada — um original de 1200 px ou mais fica mais nítido.
+- **Carregamento:** preguiçoso de verdade — só começa a baixar quando a pessoa rola ~1/4 da tela (perto do fim do hero), então não disputa com a abertura nem com o LCP. O `srcset` escolhe 750 ou 1200 px conforme a tela.
+- **Como aparece:** camada fixa atrás das seções (um `<img>`, sem `background-attachment: fixed`, que o iPhone ignora), com parallax leve só com `transform` (desligado com `prefers-reduced-motion`). Por cima: `#05070D` a 68% + vinheta. A emenda com o hero é um degradê de 200 px. Os títulos de seção têm uma faixa escura que se dissolve nas bordas; os cartões continuam 90% opacos. Os poderes continuam por cima de tudo.
+- `node scripts/fundo.mjs` tira os prints (transição e duas seções, iPhone 13 e 360x740) e confere que a imagem não baixa antes de rolar.
+
 ## 4. Os poderes
 
 Funcionam no convite inteiro, menos sobre campos de texto, botões e links. Arrastar na vertical continua rolando a página.
@@ -94,6 +103,8 @@ npx playwright install chromium        # só na primeira vez
 node scripts/ver.mjs                   # prints da abertura, hero e seções → screenshots/ver/
 node scripts/contraste.mjs [--aparelho=360x740]   # contraste de todo texto contra o pior pixel do fundo
 node scripts/comparar.mjs <rótulo>      # prints do hero e das seções no iPhone 13 e no 360x740 → screenshots/<rótulo>/
+node scripts/fundo.mjs                 # prints da imagem de fundo das seções + confere o carregamento preguiçoso
+node scripts/lighthouse.mjs <rótulo> <url> <cli-do-lighthouse>   # uma rodada do Lighthouse (celular)
 node scripts/quadros.mjs [--gestos] [--2d] [poder]   # cada poder quadro a quadro → screenshots/quadros/
 node scripts/folha.mjs                 # junta os quadros de cada poder numa folha (_folha-<poder>.png)
 node scripts/diag-motor.mjs [--gpu] [--2d]          # tempo de quadro de cada poder
@@ -128,6 +139,7 @@ src/config/tema.ts         paleta → variáveis CSS (+ tons de texto AA)
 src/intro/intro.ts         chuva, relâmpagos e o raio que abre o convite
 src/components/
   cena/Cena.tsx            fundo fixo escuro e calmo (#05070D)
+  cena/FundoSecoes.tsx     imagem de fundo das seções (fixa, parallax, carregamento preguiçoso)
   hero/Poster.tsx          pôster do hero: céu (lib/fx/ceu.ts, pintado num Worker), explosão de luz, contraluz, rochas (lib/fx/rochas.ts), brasas
   hero/                    Hero, Selo (emblema de metal), TituloEletrico
   sections/                Countdown, Missao, Poderes, Rsvp (credencial), Pix, Footer

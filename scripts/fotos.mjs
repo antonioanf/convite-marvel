@@ -1,8 +1,9 @@
 /**
- * Converte as fotos de originais/ para WebP em public/fotos/.
+ * Converte a imagem de fundo das seções (originais/fundo.jpg ou .png) para WebP em public/fotos/:
+ *   fundo-1200.webp  (1200 px de largura, telas grandes / 3x)
+ *   fundo-750.webp   (750 px, celulares menores)
+ * Qualidade ~72; se passar de ~200 KB, baixa a qualidade até caber.
  * Uso: npm run fotos
- *  - <nome>.webp      até 1200 px de largura (nunca amplia), qualidade 84 (as fotos de origem são pequenas, então priorizamos nitidez)
- *  - <nome>-600.webp  600 px, para o carrossel
  */
 import sharp from 'sharp'
 import fs from 'node:fs'
@@ -11,19 +12,24 @@ import path from 'node:path'
 const root = path.resolve(import.meta.dirname, '..')
 const src = path.join(root, 'originais')
 const out = path.join(root, 'public/fotos')
-if (!fs.existsSync(src)) {
-  console.log('Sem a pasta originais/: nada para converter (o convite é todo ilustrado).')
+const LIMITE = 200 * 1024
+const orig = ['fundo.jpg', 'fundo.jpeg', 'fundo.png', 'fundo.webp'].map((f) => path.join(src, f)).find((f) => fs.existsSync(f))
+if (!orig) {
+  console.log('Sem originais/fundo.jpg (ou .png): nada para converter.')
   process.exit(0)
 }
 fs.mkdirSync(out, { recursive: true })
-
-for (const f of fs.readdirSync(src).filter((f) => /\.(png|jpe?g|webp|heic)$/i.test(f))) {
-  const name = f.replace(/\.[^.]+$/, '')
-  const big = path.join(out, `${name}.webp`)
-  const small = path.join(out, `${name}-600.webp`)
-  await sharp(path.join(src, f)).rotate().resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 84, effort: 6 }).toFile(big)
-  await sharp(path.join(src, f)).rotate().resize({ width: 600, withoutEnlargement: true }).webp({ quality: 72, effort: 6 }).toFile(small)
-  const m = await sharp(big).metadata()
-  const kb = (p) => Math.round(fs.statSync(p).size / 1024)
-  console.log(`${name}: ${m.width}x${m.height} · ${kb(big)} KB · 600px ${kb(small)} KB`)
+const meta = await sharp(orig).metadata()
+for (const w of [1200, 750]) {
+  const dest = path.join(out, `fundo-${w}.webp`)
+  let q = 72
+  let buf
+  do {
+    // se o original for menor que a largura pedida, amplia (fica atrás de uma camada escura)
+    buf = await sharp(orig).rotate().resize({ width: w, kernel: 'lanczos3' }).webp({ quality: q, effort: 6 }).toBuffer()
+    q -= 4
+  } while (buf.length > LIMITE && q > 40)
+  fs.writeFileSync(dest, buf)
+  const m = await sharp(buf).metadata()
+  console.log(`fundo-${w}.webp: ${m.width}x${m.height} · ${Math.round(buf.length / 1024)} KB · qualidade ${q + 4}${meta.width < w ? ` (ampliada de ${meta.width} px)` : ''}`)
 }

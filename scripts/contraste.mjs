@@ -19,6 +19,10 @@ const b = await chromium.launch()
 const p = await (await b.newContext({ viewport, deviceScaleFactor: 1, isMobile: true, hasTouch: true, locale: 'pt-BR' })).newPage()
 await p.goto(url + '?abrir=1&modo=normal', { waitUntil: 'load' })
 await p.waitForTimeout(3500) // céu pintado, título aceso
+// rola um pouco para a imagem de fundo das seções baixar (ela é preguiçosa) e espera ela aparecer
+await p.evaluate(() => window.scrollTo(0, innerHeight))
+await p.waitForFunction(() => !document.querySelector('.fundo-secoes img') || document.querySelector('.fundo-secoes img').classList.contains('pronta'), null, { timeout: 15000 }).catch(() => {})
+await p.waitForTimeout(1000)
 // barras fixas (progresso, botão de baixo) não são fundo do texto; entradas (reveal) já completas
 await p.addStyleTag({ content: '.progress, .fixed { display: none !important } .reveal { opacity: 1 !important; transform: none !important } .ct-oculto, .ct-oculto * { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important }' })
 
@@ -123,7 +127,7 @@ for (const a of alvos) {
     }
     // texto claro: pior = fundo mais claro; texto escuro: pior = fundo mais escuro
     const c = texto > fundoMax ? razaoL(texto, fundoMax) : texto < fundoMin ? razaoL(texto, fundoMin) : 1
-    if (process.env.DEBUG && c < 3) console.log("  [dbg]", a.txt, pos, "texto", texto.toFixed(3), "fundo", fundoMin.toFixed(3), "-", fundoMax.toFixed(3), "box", JSON.stringify(box))
+    if (process.env.DEBUG && c < 4.5) console.log("  [dbg]", a.txt, pos, "texto", texto.toFixed(3), "fundo", fundoMin.toFixed(3), "-", fundoMax.toFixed(3), "box", JSON.stringify(box))
     pior = Math.min(pior, c)
   }
   if (pior === Infinity) continue

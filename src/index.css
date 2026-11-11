@@ -113,9 +113,12 @@
     margin-inline: auto;
     padding-inline: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right));
   }
+  /* respiro em cima: content-visibility (abaixo) limita a pintura à caixa da seção, e a faixa
+     escura atrás do título precisa de espaço para se dissolver sem corte reto */
   .secao {
     position: relative;
-    padding-bottom: 72px;
+    padding-top: 44px;
+    padding-bottom: 28px;
   }
 
   /* cor de destaque por seção / cartão */
@@ -170,7 +173,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.7)) drop-shadow(0 0 18px rgb(var(--acc-rgb) / 0.35));
+    filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.7)) drop-shadow(0 0 12px rgb(var(--acc-rgb) / 0.22));
   }
   .metal-ouro {
     background: linear-gradient(180deg, #fffbea 0%, #ffe27a 30%, #f5b700 48%, #a85a00 56%, #ffc93a 74%, #fff4c4 100%);
@@ -216,6 +219,50 @@
       radial-gradient(40% 50% at -10% 30%, rgb(var(--roxo-rgb) / 0.07), transparent 70%),
       radial-gradient(40% 50% at 110% 70%, rgb(var(--azul-rgb) / 0.06), transparent 70%),
       #05070d;
+  }
+
+  /* ---------- Imagem de fundo das seções abaixo do hero ----------
+     Camada fixa (z 1: acima do fundo escuro, abaixo da página e das faíscas). O hero é opaco e a
+     cobre; ela aparece do "ROLE" para baixo. Sem background-attachment: fixed (não funciona no
+     iPhone): é um <img> numa camada fixa, e o parallax é só transform. */
+  .fundo-secoes {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .fundo-secoes img {
+    position: absolute;
+    left: 0;
+    top: -2lvh;
+    width: 100%;
+    height: 112lvh;
+    object-fit: cover;
+    object-position: 50% 40%;
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+    will-change: transform;
+  }
+  .fundo-secoes img.pronta {
+    opacity: 1;
+  }
+  /* por cima da imagem: preto azulado #05070D a ~68% + vinheta nas bordas */
+  .fundo-secoes::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 85% at 50% 45%, transparent 40%, rgb(5 7 13 / 0.75) 100%),
+      rgb(5 7 13 / 0.68);
+  }
+  /* emenda do hero para a imagem: 200 px de degradê, sem corte reto (sobrepõe o começo da contagem;
+     não é posicionado, então fica atrás dos títulos e cartões) */
+  .transicao-fundo {
+    height: 200px;
+    margin-bottom: -200px;
+    background: linear-gradient(180deg, #05070d 0%, rgb(5 7 13 / 0.85) 35%, rgb(5 7 13 / 0.4) 70%, rgb(5 7 13 / 0) 100%);
+    pointer-events: none;
   }
 
   /* ---------- Pôster do hero (rola junto, atrás do conteúdo) ---------- */
@@ -445,6 +492,23 @@
     z-index: -1;
     pointer-events: none;
     background: radial-gradient(closest-side, rgb(7 8 26 / 0.72), rgb(7 8 26 / 0.5) 60%, transparent);
+  }
+  /* título de seção sobre a imagem de fundo: faixa escura quase sólida atrás do cabeçalho inteiro
+     (rótulo, título e índice), dissolvendo em cima, embaixo e nas pontas — sem corte reto */
+  .secao-titulo::before {
+    left: -24px;
+    right: -24px;
+    top: -42px;
+    bottom: -20px;
+    background: rgb(5 7 13 / 0.9);
+    -webkit-mask:
+      linear-gradient(180deg, transparent, #000 26px, #000 calc(100% - 20px), transparent),
+      linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+    -webkit-mask-composite: source-in;
+    mask:
+      linear-gradient(180deg, transparent, #000 26px, #000 calc(100% - 20px), transparent),
+      linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+    mask-composite: intersect;
   }
   .secao-titulo,
   .rodape-txt {
