@@ -1,0 +1,854 @@
+@import 'tailwindcss';
+@import 'lenis/dist/lenis.css';
+
+/* Cores vêm do config (src/config/tema.ts, injetadas no index.html); estes são só os valores padrão. */
+@theme {
+  --color-perola: #f6f2fa;
+  --color-lavanda: #e4d4f7;
+  --color-lilas: #c3a3ee;
+  --color-violeta: #8b5cf6;
+  --color-roxo: #3b1c6e;
+  --color-rosa: #f48fb8;
+  --color-magenta: #e0428a;
+  --color-prata: #e9e6f2;
+  --color-holo-ciano: #a5f3fc;
+  --color-holo-rosa: #f9a8d4;
+  --color-tinta-2: #644b8d;
+  --color-violeta-txt: #6b42c0;
+  --color-magenta-txt: #9e337f;
+  --color-btn-a: #7d50de;
+  --color-btn-b: #c93d86;
+  --font-display: 'Instrument Serif', 'Times New Roman', serif;
+  --font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --ease-mola: cubic-bezier(0.3, 0.7, 0.4, 1.5);
+  --ease-suave: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Ângulo do brilho holográfico: atualizado pela inclinação e pelo scroll (só nos elementos [data-holo]). */
+@property --holo-a {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@layer base {
+  html {
+    background: var(--color-perola);
+    color: var(--color-roxo);
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    min-height: 100svh;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    overscroll-behavior-y: none;
+    background: var(--color-perola);
+  }
+  /* Inputs ≥ 16px: o iOS não dá zoom ao focar */
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    font-size: max(16px, 1em);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-violeta);
+    outline-offset: 3px;
+    border-radius: 14px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-lilas) 55%, transparent);
+  }
+}
+
+/* Classes de componente: ficam numa camada abaixo das utilitárias do Tailwind,
+   então uma classe como py-3.5 ou text-[11px] ganha sem precisar de "!". */
+@layer components {
+  /* ---------- Página: uma coluna, sem scroll horizontal acidental ---------- */
+  /* Enquanto a intro cobre a tela, o convite já está montado por baixo, mas não é pintado. */
+  html.pre .page {
+    visibility: hidden;
+  }
+  /* Seções abaixo do início: o navegador só calcula layout/pintura quando elas chegam perto da tela
+     (o tamanho medido fica guardado em "auto", então o scroll não pula). */
+  .page > section:not(#inicio):not(#tres),
+  .page > footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 820px;
+  }
+  .page {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  .wrap {
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
+    padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+  }
+
+  /* ---------- Tipografia ---------- */
+  .serif {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  /* rótulo "tech": caixa alta, mono, tracking largo */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-tinta-2);
+  }
+
+  /* ---------- Fundo: gradiente mesh animado (só transform) + grão ----------
+     Duas camadas: a base (pérola + grão, parada) e as 4 manchas num elemento só, que deriva devagar.
+     As manchas são os mesmos círculos de antes (90vmax e 70vmax), desenhados como radial-gradient. */
+  .mesh {
+    position: fixed;
+    inset: -12%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .23 0 0 0 0 .11 0 0 0 0 .43 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") repeat, var(--color-perola);
+    will-change: transform;
+  }
+  .mesh-inner {
+    position: absolute;
+    inset: 0;
+  }
+  .mesh-blobs {
+    position: absolute;
+    inset: -10%;
+    background:
+      radial-gradient(circle 35vmax at calc(130% - 35vmax) calc(118% - 35vmax), color-mix(in srgb, var(--color-holo-ciano) 40%, transparent), transparent),
+      radial-gradient(circle 45vmax at calc(-25% + 45vmax) calc(138% - 45vmax), color-mix(in srgb, var(--color-lilas) 50%, transparent), transparent),
+      radial-gradient(circle 45vmax at calc(142% - 45vmax) calc(6% + 45vmax), color-mix(in srgb, var(--color-holo-rosa) 55%, transparent), transparent),
+      radial-gradient(circle 45vmax at calc(-38% + 45vmax) calc(-22% + 45vmax), var(--color-lavanda), transparent);
+    animation: mesh-drift 28s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @keyframes mesh-drift {
+    to {
+      transform: translate3d(6%, 7%, 0) rotate(8deg) scale(1.08);
+    }
+  }
+
+  /* Camadas fixas de efeitos (borboletas, brilhos) */
+  .fx-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Barra de progresso iridescente no topo */
+  .progress {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 60;
+    height: 3px;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    background: linear-gradient(90deg, var(--color-violeta), var(--color-holo-rosa), var(--color-holo-ciano), var(--color-magenta));
+    pointer-events: none;
+  }
+
+  /* ---------- Cartões (bento) ---------- */
+  .card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 28px;
+    background: rgb(255 255 255 / 0.74);
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 14%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 22px 44px -26px color-mix(in srgb, var(--color-violeta) 55%, transparent),
+      0 2px 8px -4px color-mix(in srgb, var(--color-roxo) 14%, transparent);
+  }
+  /* cartão "vidro": sem backdrop-filter (desfocar o fundo animado a cada quadro pesava no celular) */
+  .card-blur {
+    background: rgb(255 255 255 / 0.82);
+  }
+  /* brilho que segue o dedo (spotlight) */
+  .spot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 280px;
+    margin: -140px 0 0 -140px;
+    border-radius: 50%;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--color-holo-rosa) 55%, transparent),
+      color-mix(in srgb, var(--color-holo-ciano) 22%, transparent) 55%,
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+    z-index: -1;
+    /* sem will-change: cada .spot virava uma camada e fazia o cartão inteiro virar outra (sobreposição) */
+  }
+  .is-touched > .spot {
+    opacity: 1;
+  }
+
+  /* Borda holográfica (gradiente cônico girando com --holo-a) */
+  .holo-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--holo-a),
+      var(--color-lilas),
+      var(--color-holo-ciano),
+      var(--color-holo-rosa),
+      var(--color-violeta),
+      var(--color-prata),
+      var(--color-lilas)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Texto holográfico (idade, destaques) */
+  .holo-text {
+    color: var(--color-violeta-txt);
+    background-image: linear-gradient(
+      calc(var(--holo-a) + 115deg),
+      var(--color-btn-a) 0%,
+      var(--color-magenta) 26%,
+      var(--color-violeta) 46%,
+      #5fb7d4 64%,
+      var(--color-btn-a) 82%,
+      var(--color-magenta-txt) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ---------- Botões ---------- */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 54px;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.1;
+    letter-spacing: -0.005em;
+    text-align: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition:
+      transform 0.32s var(--ease-mola),
+      box-shadow 0.25s ease,
+      opacity 0.2s;
+  }
+  .btn > .spot {
+    width: 160px;
+    height: 160px;
+    margin: -80px 0 0 -80px;
+  }
+  .btn.is-pressed {
+    transform: scale(0.95);
+    transition-duration: 0.12s;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.5) 50%, transparent 70%);
+    transform: translateX(-130%);
+    pointer-events: none;
+  }
+  .btn.sheen-loop::after {
+    animation: sheen 4.5s ease-in-out 1.5s infinite;
+  }
+  @keyframes sheen {
+    0% {
+      transform: translateX(-130%);
+    }
+    22%,
+    100% {
+      transform: translateX(130%);
+    }
+  }
+  .btn-primary {
+    color: #fff;
+    background: linear-gradient(115deg, var(--color-btn-a), var(--color-btn-b));
+    box-shadow:
+      0 14px 30px -12px color-mix(in srgb, var(--color-magenta) 70%, transparent),
+      inset 0 1px 0 rgb(255 255 255 / 0.35);
+  }
+  .btn-primary > .spot {
+    background: radial-gradient(closest-side, rgb(255 255 255 / 0.45), transparent);
+  }
+  .btn-soft {
+    color: var(--color-roxo);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 20%, transparent);
+    box-shadow: 0 8px 22px -14px color-mix(in srgb, var(--color-violeta) 60%, transparent);
+  }
+  .btn[disabled] {
+    opacity: 0.55;
+  }
+
+  /* ---------- Ícones de linha ---------- */
+  .ico {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    color: var(--color-violeta-txt);
+    background: linear-gradient(145deg, #fff, var(--color-lavanda));
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 16%, transparent);
+  }
+
+  /* seta "Role" do topo */
+  .nudge {
+    animation: nudge 1.6s ease-in-out infinite;
+  }
+  @keyframes nudge {
+    50% {
+      transform: translateY(4px);
+    }
+  }
+
+  /* ---------- Seções animadas: pausa o que está fora da tela ---------- */
+  .is-offscreen,
+  .is-offscreen * {
+    animation-play-state: paused !important;
+  }
+
+  /* ---------- Ondas sonoras do botão de música ---------- */
+  .eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 18px;
+  }
+  .eq i {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    background: currentColor;
+    transform-origin: 50% 100%;
+    transform: scaleY(0.25);
+  }
+  .eq.on i {
+    animation: eq 0.9s ease-in-out infinite alternate;
+  }
+  .eq.on i:nth-child(2) {
+    animation-delay: -0.3s;
+    animation-duration: 0.7s;
+  }
+  .eq.on i:nth-child(3) {
+    animation-delay: -0.6s;
+    animation-duration: 1.1s;
+  }
+  .eq.on i:nth-child(4) {
+    animation-delay: -0.15s;
+    animation-duration: 0.8s;
+  }
+  @keyframes eq {
+    from {
+      transform: scaleY(0.2);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  /* ---------- Moldura de celular (desktop) ---------- */
+  .desk-shell {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 64px;
+    z-index: 10;
+  }
+  .desk-phone {
+    position: relative;
+    /* tela interna = 390x844 (viewport base) */
+    width: 414px;
+    height: 868px;
+    border-radius: 56px;
+    padding: 12px;
+    background: linear-gradient(145deg, #fff, var(--color-prata) 40%, var(--color-lavanda));
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-violeta) 25%, transparent),
+      0 50px 110px -30px color-mix(in srgb, var(--color-violeta) 55%, transparent),
+      inset 0 1px 0 #fff;
+    transform-origin: center;
+    flex: none;
+  }
+  .desk-phone::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    width: 110px;
+    height: 30px;
+    margin-left: -55px;
+    border-radius: 20px;
+    background: var(--color-roxo);
+    z-index: 2;
+  }
+  .desk-phone iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 44px;
+    background: var(--color-perola);
+    display: block;
+  }
+  .desk-side {
+    max-width: 340px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Borboletas vetoriais (ícones/decoração) */
+  .bfly-icon .wl,
+  .bfly-icon .wr {
+    transform-box: view-box;
+    transform-origin: 0 0;
+    animation: bf-flap 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes bf-flap {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0.25);
+    }
+  }
+  .sr-only-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---------- Placeholder de foto ---------- */
+  .ph {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(70% 60% at 30% 25%, color-mix(in srgb, var(--color-holo-rosa) 70%, transparent), transparent 70%),
+      radial-gradient(80% 70% at 80% 85%, color-mix(in srgb, var(--color-holo-ciano) 55%, transparent), transparent 70%),
+      linear-gradient(150deg, var(--color-lavanda), var(--color-lilas));
+  }
+
+  /* ---------- Foto holográfica (hero) ---------- */
+  .holo-card {
+    border-radius: inherit;
+    will-change: transform;
+    box-shadow:
+      0 40px 70px -40px color-mix(in srgb, var(--color-violeta) 80%, transparent),
+      0 10px 24px -14px color-mix(in srgb, var(--color-roxo) 30%, transparent);
+  }
+  .holo-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.55);
+    pointer-events: none;
+  }
+  .holo-sheen {
+    position: absolute;
+    inset: -40%;
+    pointer-events: none;
+    opacity: 0.45;
+    mix-blend-mode: soft-light;
+    background: linear-gradient(
+      115deg,
+      transparent 36%,
+      color-mix(in srgb, var(--color-holo-ciano) 80%, transparent) 44%,
+      rgb(255 255 255 / 0.85) 50%,
+      color-mix(in srgb, var(--color-holo-rosa) 80%, transparent) 56%,
+      color-mix(in srgb, var(--color-lilas) 60%, transparent) 60%,
+      transparent 68%
+    );
+    will-change: transform, opacity;
+  }
+  /* gradiente que dá leitura ao nome sobre a foto (só na parte de baixo, longe do rosto) */
+  .hero-fade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 40%;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgb(43 18 84 / 0.82),
+      rgb(43 18 84 / 0.68) 38%,
+      rgb(43 18 84 / 0.4) 62%,
+      rgb(43 18 84 / 0.12) 82%,
+      transparent
+    );
+  }
+  .hero-name {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    color: #fff;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 30px rgb(43 18 84 / 0.5);
+  }
+  .hero-name .ch {
+    display: inline-block;
+  }
+
+  /* Selo redondo da idade */
+  .sticker {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #fff, rgb(255 255 255 / 0.86) 60%, var(--color-prata));
+    box-shadow:
+      0 16px 30px -14px color-mix(in srgb, var(--color-violeta) 75%, transparent),
+      inset 0 1px 0 #fff;
+  }
+  .sticker-spin {
+    animation: sticker 18s linear infinite;
+  }
+  @keyframes sticker {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* ---------- Contagem: números mono que viram ---------- */
+  .flip {
+    position: relative;
+    width: 100%;
+    height: 66px;
+    perspective: 320px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: clamp(26px, 8.4vw, 36px);
+    letter-spacing: -0.03em;
+    color: var(--color-roxo);
+  }
+  .flip-half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--color-lavanda) 40%, #fff));
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 14%, transparent);
+  }
+  .flip-half span {
+    display: block;
+    height: 66px;
+    line-height: 66px;
+    text-align: center;
+  }
+  .flip-top {
+    top: 0;
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    transform-origin: 50% 100%;
+  }
+  .flip-bottom {
+    bottom: 0;
+    border-top: 0;
+    border-radius: 0 0 16px 16px;
+    transform-origin: 50% 0%;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-lavanda) 40%, #fff), color-mix(in srgb, var(--color-lavanda) 70%, #fff));
+  }
+  .flip-bottom span {
+    transform: translateY(-50%);
+  }
+  .flip-top.anim {
+    animation: flip-top 0.3s ease-in forwards;
+    z-index: 2;
+  }
+  .flip-bottom.anim {
+    animation: flip-bottom 0.3s 0.3s ease-out both;
+    z-index: 2;
+  }
+  @keyframes flip-top {
+    to {
+      transform: rotateX(-90deg);
+    }
+  }
+  @keyframes flip-bottom {
+    from {
+      transform: rotateX(90deg);
+    }
+    to {
+      transform: rotateX(0);
+    }
+  }
+  .flip::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 50%;
+    height: 1px;
+    background: rgb(255 255 255 / 0.9);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-violeta) 10%, transparent);
+    z-index: 3;
+  }
+  /* bolinha "ao vivo" que pulsa a cada segundo (a key muda e reinicia a animação) */
+  .live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-magenta);
+    animation: live 1s ease-out;
+  }
+  @keyframes live {
+    0% {
+      transform: scale(1.6);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+  }
+
+  /* ---------- Galeria: carrossel com snap, formatos variados ---------- */
+  .carousel {
+    --sh: clamp(300px, 96vw, 440px);
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 8px max(16px, calc(50% - 200px)) 22px;
+    scroll-padding-inline: 16px;
+  }
+  .carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel > * {
+    scroll-snap-align: center;
+    flex: none;
+  }
+  .slide {
+    height: var(--sh);
+    width: min(calc(var(--sh) * var(--r)), calc(100vw - 52px));
+  }
+  .pill-dot {
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-violeta) 30%, transparent);
+    transition:
+      width 0.35s var(--ease-mola),
+      background 0.3s;
+  }
+  .pill-dot.is-on {
+    width: 26px;
+    background: linear-gradient(90deg, var(--color-violeta), var(--color-magenta));
+  }
+
+  /* ---------- Formulário ---------- */
+  .field {
+    width: 100%;
+    min-height: 56px;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 24%, transparent);
+    background: #fff;
+    padding: 0 16px;
+    font-size: 17px;
+    color: var(--color-roxo);
+    outline: none;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field::placeholder {
+    color: var(--color-tinta-2);
+    opacity: 0.85;
+  }
+  .field:focus {
+    border-color: var(--color-violeta);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-violeta) 18%, transparent);
+  }
+  .field[aria-invalid='true'] {
+    border-color: var(--color-magenta);
+  }
+  /* ---------- Barra inferior: pill flutuante clara ---------- */
+  .dock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.72);
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 16%, transparent);
+    box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--color-violeta) 70%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+    backdrop-filter: blur(16px) saturate(170%);
+  }
+  html.lite .dock {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgb(255 255 255 / 0.94);
+  }
+  .dock .btn {
+    min-height: 48px;
+    padding: 0 1.2rem;
+    font-size: 15px;
+  }
+  .music-btn {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    color: var(--color-magenta-txt);
+    background: linear-gradient(145deg, #fff, var(--color-lavanda));
+    transition: transform 0.25s var(--ease-mola);
+  }
+  .music-btn:active {
+    transform: scale(0.9);
+  }
+
+  /* ---------- Bolinho com velas ---------- */
+  .cake .flame {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: flicker 0.8s ease-in-out infinite alternate;
+  }
+  .cake .flame-glow {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: glowp 1.3s ease-in-out infinite alternate;
+  }
+  .cake .flame-wrap {
+    transform-box: fill-box;
+    transform-origin: 50% 85%;
+    transition:
+      transform 0.25s ease,
+      opacity 0.3s ease;
+  }
+  .cake .smoke {
+    animation: smoke 1.8s ease-out forwards;
+  }
+  @keyframes flicker {
+    0% {
+      transform: scale(1, 1) rotate(-4deg);
+    }
+    50% {
+      transform: scale(0.9, 1.1) rotate(3deg);
+    }
+    100% {
+      transform: scale(1.06, 0.94) rotate(-1deg);
+    }
+  }
+  @keyframes glowp {
+    from {
+      transform: scale(0.85);
+      opacity: 0.7;
+    }
+    to {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+  @keyframes smoke {
+    from {
+      transform: translateY(0);
+      opacity: 0.95;
+    }
+    to {
+      transform: translateY(-30px);
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Pegue as borboletas ---------- */
+  .catch-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px 0 10px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.9);
+    border: 1px solid color-mix(in srgb, var(--color-violeta) 18%, transparent);
+    box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--color-violeta) 80%, transparent);
+  }
+  .candles-hit {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+  }
+  .candles-hit:disabled {
+    cursor: default;
+  }
+}

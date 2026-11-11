@@ -1,0 +1,7 @@
+node_modules
+dist
+.vercel
+.netlify
+test-results
+screenshots
+*.log

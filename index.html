@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>%TITULO%</title>
+    <meta name="description" content="%DESCRICAO%" />
+    <meta name="theme-color" content="%THEME%" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Prévia do link no WhatsApp / redes (Open Graph) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:url" content="%URL%" />
+    <meta property="og:title" content="%TITULO%" />
+    <meta property="og:description" content="%DESCRICAO%" />
+    <meta property="og:image" content="%OG_IMAGE%" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Convite de aniversário de %NOME%" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="%OG_IMAGE%" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- foto principal (hero): começa a baixar junto com o HTML -->
+    <link rel="preload" as="image" href="%HERO_SRC%" imagesrcset="%HERO_SRCSET%" imagesizes="(max-width: 480px) 92vw, 450px" fetchpriority="high" />
+
+    <style>%PALETA%</style>
+    <script>
+      // Decide antes da primeira pintura se mostramos a moldura de celular (desktop).
+      ;(function () {
+        var d = document.documentElement, framed
+        try { framed = window.self !== window.top } catch (e) { framed = true }
+        if (framed) d.classList.add('framed')
+        if (!framed && window.matchMedia && matchMedia('(min-width: 820px) and (hover: hover) and (pointer: fine)').matches) d.classList.add('desk')
+        else d.classList.add('locked', 'pre') // pre: a intro está na tela
+      })()
+    </script>
+    <!-- CSS crítico: só o necessário para a intro aparecer instantaneamente -->
+    <style>
+      @font-face { font-family: 'Manrope'; font-style: normal; font-weight: 200 800; font-display: swap; src: url(/fonts/manrope.woff2) format('woff2'); }
+      @font-face { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; font-display: swap; src: url(/fonts/instrument-serif-italic.woff2) format('woff2'); }
+      @font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; font-display: swap; src: url(/fonts/instrument-serif.woff2) format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800; font-display: swap; src: url(/fonts/jetbrains-mono.woff2) format('woff2'); }
+      html { background: var(--color-perola); color: var(--color-roxo); -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      html.desk #intro { display: none; }
+      html.locked, html.locked body { overflow: hidden; }
+
+      .intro { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+        min-height: 100svh; height: 100dvh; padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom); box-sizing: border-box;
+        background: var(--color-perola); overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+      .intro:focus-visible { outline: none; }
+      .intro:focus-visible .intro-cta span { outline: 3px solid var(--color-violeta); outline-offset: 5px; }
+      /* gradiente iridescente lento (só transform) */
+      .intro-mesh { position: absolute; inset: -30%; pointer-events: none;
+        background: radial-gradient(40% 32% at 28% 30%, var(--color-lavanda), transparent 70%),
+          radial-gradient(36% 30% at 76% 40%, color-mix(in srgb, var(--color-holo-rosa) 70%, transparent), transparent 70%),
+          radial-gradient(38% 30% at 40% 74%, color-mix(in srgb, var(--color-holo-ciano) 55%, transparent), transparent 70%),
+          radial-gradient(30% 26% at 78% 78%, color-mix(in srgb, var(--color-lilas) 60%, transparent), transparent 70%);
+        animation: meshspin 26s linear infinite; will-change: transform; }
+      @keyframes meshspin { to { transform: rotate(360deg) } }
+
+      .intro-top { position: relative; text-align: center; animation: fadein .9s .1s both; }
+      .intro-label { margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--color-tinta-2); }
+      .intro-title { margin: 10px 0 0; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 44px; line-height: 1; letter-spacing: -.01em; color: var(--color-roxo); }
+
+      .bf-wrap { position: relative; width: 210px; height: 200px; display: grid; place-items: center; }
+      .bf-halo { position: absolute; inset: -40px; border-radius: 50%;
+        background: conic-gradient(from 0deg, var(--color-holo-ciano), var(--color-holo-rosa), var(--color-lilas), var(--color-holo-ciano));
+        -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 72%); mask: radial-gradient(closest-side, #000 20%, transparent 72%);
+        opacity: .55; animation: halo 3.2s ease-in-out infinite; will-change: transform, opacity; }
+      @keyframes halo { 0%,100% { transform: scale(.86) rotate(0deg); opacity: .4 } 50% { transform: scale(1.04) rotate(40deg); opacity: .75 } }
+      /* borboleta: imagem embutida (data URI) para aparecer junto com o HTML; o eixo do corpo fica no meio */
+      .bf { position: relative; width: 200px; aspect-ratio: %BORBOLETA_RATIO%; perspective: 520px; animation: float 4s ease-in-out infinite; }
+      @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+      .bf i { position: absolute; top: 0; bottom: 0; background: url(%BORBOLETA%) no-repeat; }
+      /* sombra parada (um drop-shadow teria de ser recalculado a cada quadro com as asas mexendo) */
+      .bf .bf-shadow { top: auto; left: 18%; right: 18%; bottom: -18px; height: 26px; border-radius: 50%; background: radial-gradient(closest-side, rgba(139,92,246,.32), transparent); }
+      /* cada asa é um elemento com metade da largura mostrando a sua metade da imagem;
+         gira em rotateY a partir do corpo (a borda que encosta no meio) */
+      .bf .bf-wing { width: 50%; background-size: 200% 100%; will-change: transform; }
+      .bf .bf-l { left: 0; background-position: left center; transform-origin: 100% 50%; animation: wing-l 2.6s ease-in-out infinite; }
+      .bf .bf-r { left: 50%; background-position: right center; transform-origin: 0 50%; animation: wing-r 2.6s ease-in-out infinite; }
+      @keyframes wing-l { 0%,100% { transform: rotateY(0) } 50% { transform: rotateY(56deg) } }
+      @keyframes wing-r { 0%,100% { transform: rotateY(0) } 50% { transform: rotateY(-56deg) } }
+      /* corpo: faixa fina no meio (3,2% da largura), por cima da raiz das asas */
+      .bf .bf-body { left: 48.4%; width: 3.2%; background-size: 3125% 100%; background-position: center; }
+
+      .intro-cta { position: relative; margin: 6px 0 0; animation: fadein .9s .4s both; }
+      .intro-cta span { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 28px; border-radius: 999px; box-sizing: border-box;
+        font-size: 16px; font-weight: 700; color: var(--color-roxo); background: rgba(255,255,255,.82);
+        box-shadow: 0 14px 34px -16px rgba(139,92,246,.7), inset 0 1px 0 #fff; animation: breathe 2.6s ease-in-out infinite; }
+      .intro-cta span::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+        background: linear-gradient(120deg, var(--color-lilas), var(--color-holo-ciano), var(--color-holo-rosa), var(--color-violeta));
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+      .intro-cta svg { flex: none }
+      @keyframes breathe { 0%,100% { transform: scale(1) } 50% { transform: scale(1.04) } }
+      @keyframes fadein { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+      .intro-date { position: absolute; left: 0; right: 0; bottom: max(28px, env(safe-area-inset-bottom)); margin: 0; text-align: center;
+        font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: .3em; color: var(--color-tinta-2); animation: fadein .9s .6s both; }
+
+      /* brilho iridescente que "dissolve" a tela */
+      .intro-glow { position: absolute; left: 50%; top: 50%; width: 140px; height: 140px; margin: -70px 0 0 -70px; border-radius: 50%; pointer-events: none;
+        background: radial-gradient(closest-side, #fff 0%, rgba(255,255,255,.95) 30%, transparent 72%),
+          conic-gradient(from 30deg, var(--color-holo-ciano), var(--color-holo-rosa), var(--color-lilas), var(--color-holo-ciano));
+        -webkit-mask: radial-gradient(closest-side, #000 55%, transparent); mask: radial-gradient(closest-side, #000 55%, transparent);
+        transform: scale(0); opacity: 0; will-change: transform, opacity; }
+
+      /* saída (~0,55 s depois do toque): asas abrem, borboleta voa para a câmera, brilho dissolve a tela */
+      .intro.is-open { cursor: default; }
+      .intro.is-open .bf .bf-wing { animation: none; transform: rotateY(0); transition: transform .25s cubic-bezier(.3,.7,.4,1.2); }
+      .intro.is-open .bf { animation: none; transform: scale(1.5); opacity: 0; transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .35s .15s ease; }
+      .intro.is-open .bf-halo { animation: none; transform: scale(1.6); opacity: 0; transition: transform .5s, opacity .5s; }
+      .intro.is-open .intro-top, .intro.is-open .intro-cta, .intro.is-open .intro-date { opacity: 0; transform: translateY(14px); transition: opacity .25s, transform .25s; }
+      .intro.is-open .intro-glow { animation: glow .55s cubic-bezier(.2,.7,.2,1) forwards; }
+      @keyframes glow { 0% { transform: scale(0); opacity: 1 } 60% { opacity: 1 } 100% { transform: scale(13); opacity: 0 } }
+      .intro.is-gone { opacity: 0; pointer-events: none; transition: opacity .4s .12s ease; }
+
+      /* Borboleta SVG reutilizável (revoadas) */
+      .bfly { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; will-change: transform, opacity; }
+      .bfly .wl, .bfly .wr { transform-box: view-box; transform-origin: 0 0; animation: flap .22s ease-in-out infinite alternate; }
+      @keyframes flap { from { transform: scaleX(1) } to { transform: scaleX(.18) } }
+
+      @media (prefers-reduced-motion: reduce) {
+        .intro *, .intro { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+        .intro * { transition-duration: .01ms !important; }
+        .bf .bf-wing { animation: none !important; transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="intro" class="intro" role="button" tabindex="0" aria-label="Abrir o convite de aniversário de %NOME%">
+      <div class="intro-mesh" aria-hidden="true"></div>
+      <div class="intro-top">
+        <p class="intro-label">%NOME% · %IDADE% aninhos</p>
+        <p class="intro-title">Você recebeu<br />um convite</p>
+      </div>
+      <div class="bf-wrap" aria-hidden="true">
+        <div class="bf-halo"></div>
+        <!-- borboleta (originais/borboleta.png → npm run borboleta): a mesma imagem em 3 camadas,
+             asa esquerda e direita (cada uma com metade da imagem) girando no eixo do corpo + o corpo parado -->
+        <div class="bf">
+          <i class="bf-shadow"></i>
+          <i class="bf-wing bf-l"></i>
+          <i class="bf-wing bf-r"></i>
+          <i class="bf-body"></i>
+        </div>
+        <div class="intro-glow"></div>
+      </div>
+      <p class="intro-cta">
+        <span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /><path d="M19 16l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" /></svg>
+          Toque para abrir
+        </span>
+      </p>
+      <p class="intro-date" aria-hidden="true">%DATA_CURTA%</p>
+    </div>
+    <div id="root"></div>
+    <noscript><p style="padding:24px;text-align:center">Ative o JavaScript para ver o convite de %NOME% 🦋</p></noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
