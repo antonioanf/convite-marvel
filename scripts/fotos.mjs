@@ -11,10 +11,13 @@ import path from 'node:path'
 const root = path.resolve(import.meta.dirname, '..')
 const src = path.join(root, 'originais')
 const out = path.join(root, 'public/fotos')
+if (!fs.existsSync(src)) {
+  console.log('Sem a pasta originais/: nada para converter (o convite é todo ilustrado).')
+  process.exit(0)
+}
 fs.mkdirSync(out, { recursive: true })
 
-// borboleta.png é a borboleta da intro (npm run borboleta), não uma foto
-for (const f of fs.readdirSync(src).filter((f) => /\.(png|jpe?g|webp|heic)$/i.test(f) && !/^borboleta\./i.test(f))) {
+for (const f of fs.readdirSync(src).filter((f) => /\.(png|jpe?g|webp|heic)$/i.test(f))) {
   const name = f.replace(/\.[^.]+$/, '')
   const big = path.join(out, `${name}.webp`)
   const small = path.join(out, `${name}-600.webp`)

@@ -32,7 +32,7 @@ export function temaVars(p: Paleta): Record<string, string> {
     '--color-branco': p.branco,
     '--color-ciano': p.ciano,
     '--color-turquesa': p.turquesa,
-    '--color-roxo': p.roxo,
+    '--color-mostarda': p.mostarda,
     '--color-fogo': p.fogo,
     '--color-lilas': p.lilas,
     '--color-dourado': p.dourado,

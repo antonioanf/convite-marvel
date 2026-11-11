@@ -38,7 +38,7 @@ export interface Paleta {
   ciano: string
   /** Acentos de cada herói da equipe (Faísca, Tremor, Turbo, Astra) */
   turquesa: string
-  roxo: string
+  mostarda: string
   fogo: string
   lilas: string
   /** Dourado (raios de luz, partículas, pôr do sol) */
@@ -156,7 +156,7 @@ export const convite: ConviteConfig = {
     branco: '#FFFFFF',
     ciano: '#22D3EE',
     turquesa: '#14B8C4',
-    roxo: '#7C3AED',
+    mostarda: '#D9A21B',
     fogo: '#FF7A1A',
     lilas: '#B794F6',
     dourado: '#FFB627',

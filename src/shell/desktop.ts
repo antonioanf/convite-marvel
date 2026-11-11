@@ -1,6 +1,6 @@
 /**
  * Desktop: mostra o próprio convite (versão mobile) dentro de uma moldura de celular,
- * com o fundo perolado ao redor. Não existe layout desktop separado.
+ * com o céu da HQ ao redor. Não existe layout desktop separado.
  */
 import { convite } from '../config/convite'
 import { dataCurta } from '../lib/datas'
@@ -11,18 +11,18 @@ export function mountDesktop() {
   const src = new URL(location.href)
   const c = convite.crianca
   root.innerHTML = `
-    <div class="mesh" aria-hidden="true"><div class="mesh-inner"><div class="mesh-blobs"></div></div></div>
+    <div class="ceu" aria-hidden="true"></div>
     <main class="desk-shell">
       <div class="desk-side" style="text-align:right">
         <p class="label">${dataCurta}</p>
-        <p class="serif" style="margin-top:10px;font-size:72px;line-height:.95;color:var(--color-roxo)">${c.nome}</p>
-        <p style="margin-top:12px;font-size:18px;font-weight:600;color:var(--color-tinta-2)">vai fazer ${c.idade} aninhos 🦋</p>
+        <p class="hq-pop" style="margin-top:10px;font-size:76px;color:var(--color-amarelo)">${c.nome}</p>
+        <p style="margin-top:12px;font-size:20px;font-weight:800;color:var(--color-marinho)">vai fazer ${c.idade} anos · ${convite.equipe.nome}</p>
       </div>
       <div class="desk-phone"><iframe title="Convite de ${c.nome}" src="${src.href}"
-        allow="autoplay; clipboard-write; accelerometer; gyroscope; vibrate; microphone"></iframe></div>
-      <div class="desk-side" style="color:var(--color-tinta-2);font-size:16px;font-weight:500;line-height:1.6">
+        allow="autoplay; clipboard-write; vibrate"></iframe></div>
+      <div class="desk-side" style="color:var(--color-tinta-2);font-size:17px;font-weight:700;line-height:1.6">
         <p class="label">Feito para o celular</p>
-        <p style="margin-top:10px">Abra o link no WhatsApp para a experiência completa: toque nas borboletas, raspe a data e apague as velinhas ✨</p>
+        <p style="margin-top:10px">Abra o link no WhatsApp para a experiência completa: toque nos heróis, use os super poderes e derrote os robôs!</p>
       </div>
     </main>`
   const phone = root.querySelector<HTMLElement>('.desk-phone')!

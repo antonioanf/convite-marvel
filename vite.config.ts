@@ -27,13 +27,11 @@ function dataCurta() {
  */
 function convitePlugin(): Plugin {
   const p = convite.paleta
-  const hero = convite.heroi.foto
   const favicon = emblemaSvg(p)
   // TODO no config: sem site.url a imagem fica relativa e o WhatsApp não mostra a prévia
   const ogImage = /^https?:/.test(convite.site.imagemOg)
     ? convite.site.imagemOg
     : (convite.site.url || '') + convite.site.imagemOg
-  const heroSrcset = hero?.src && hero.srcPequena ? `${hero.srcPequena} 600w, ${hero.src} ${hero.largura ?? 1200}w` : hero?.src ?? ''
   const vars: Record<string, string> = {
     '%TITULO%': esc(convite.site.titulo),
     '%DESCRICAO%': esc(convite.site.descricao),
@@ -41,14 +39,10 @@ function convitePlugin(): Plugin {
     '%OG_IMAGE%': esc(ogImage),
     '%THEME%': p.ceu,
     '%NOME%': esc(convite.crianca.nome),
-    '%HEROI%': esc(convite.heroi.nome),
+    '%EQUIPE%': esc(convite.equipe.nome),
     '%IDADE%': String(convite.crianca.idade),
     '%DATA_CURTA%': dataCurta(),
     '%PALETA%': temaCss(p),
-    // foto do hero (se houver): começa a baixar junto com o HTML
-    '%HERO_PRELOAD%': hero?.src
-      ? `<link rel="preload" as="image" href="${esc(hero.src)}" imagesrcset="${esc(heroSrcset)}" imagesizes="(max-width: 480px) 92vw, 450px" fetchpriority="high" />`
-      : '',
     '%EMBLEMA%': emblemaSvg(p, { glow: true, attrs: 'class="cv-emb-svg"' }),
     '%POW%': burstSvg({ text: 'POW!', w: 300, h: 220, seed: 11, spikes: 15, fill: p.amarelo, textFill: p.vermelho, stroke: p.marinho, fontSize: 92 }),
   }

@@ -32,7 +32,7 @@ export interface HeroiInfo {
 export const EQUIPE: Record<HeroiId, HeroiInfo> = {
   joao: { id: 'joao', nome: 'João Lucas', titulo: 'o Líder', poder: null, poderNome: 'Liderança', fala: 'Equipe, vamos nessa!', acento: 'vermelho', desenho: joao },
   faisca: { id: 'faisca', nome: 'Faísca', titulo: 'Tempestade Elétrica', poder: 'tempestade', poderNome: 'Tempestade Elétrica', fala: 'Zap! Que energia!', acento: 'turquesa', desenho: faisca },
-  tremor: { id: 'tremor', nome: 'Tremor', titulo: 'Super Impacto', poder: 'impacto', poderNome: 'Super Impacto', fala: 'Segura que lá vem!', acento: 'roxo', desenho: tremor },
+  tremor: { id: 'tremor', nome: 'Tremor', titulo: 'Super Impacto', poder: 'impacto', poderNome: 'Super Impacto', fala: 'Segura que lá vem!', acento: 'mostarda', desenho: tremor },
   turbo: { id: 'turbo', nome: 'Turbo', titulo: 'Jato de Fogo', poder: 'fogo', poderNome: 'Jato de Fogo', fala: 'Vrummm! Partiu!', acento: 'fogo', voa: true, desenho: turbo },
   astra: { id: 'astra', nome: 'Astra', titulo: 'Portal Mágico', poder: 'portal', poderNome: 'Portal Mágico', fala: 'Brilha, estrelinha!', acento: 'lilas', desenho: astra },
 }

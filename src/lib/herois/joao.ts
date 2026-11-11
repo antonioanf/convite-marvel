@@ -1,6 +1,6 @@
 /**
  * João Lucas, o Líder: cabelo castanho, máscara de olhos azul-marinho, uniforme vermelho com
- * calção azul-marinho e detalhes amarelos (gola, cinto, punhos das botas), luvas brancas,
+ * calção azul-marinho e detalhes amarelos (gola e punhos das botas), cinto azul-marinho, luvas brancas,
  * capa CURTA azul royal e o emblema "JL" (escudo com raio) no peito.
  * Normal: punho erguido ("vamos, equipe!"). Ataque: aponta para a frente, capa ao vento, punho brilhando.
  */
@@ -33,10 +33,11 @@ export function joao(p: Paleta, pose: Pose) {
       `<rect x="${xr - 1}" y="225" width="${w + 2}" height="7" rx="3" fill="${p.amarelo}" ${sk(O, 2.5)}/>`,
   })
 
-  // tronco vermelho, calção marinho, cinto amarelo, gola amarela, emblema
+  // tronco vermelho, calção e cinto marinho, gola amarela, emblema
   s += tronco(p.vermelho, O)
   s += `<path d="M71 188 L129 188 L130 196 Q130 206 120 206 L80 206 Q70 206 70 196 Z" fill="${O}"/>`
-  s += `<rect x="70" y="182" width="60" height="9" rx="3" fill="${p.amarelo}" ${sk(O, 2.5)}/>`
+  s += `<rect x="70" y="182" width="60" height="9" rx="3" fill="${O}" stroke="#2A3F7A" stroke-width="2"/>`
+  s += `<rect x="94" y="181" width="12" height="11" rx="2" fill="#C9D3DF" ${sk(O, 2)}/>`
   s += `<path d="M86 134 L100 146 L114 134" fill="none" stroke="${p.amarelo}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
   s += `<g transform="translate(86.5 147) scale(0.27)">${emblemaG(p)}</g>`
 
