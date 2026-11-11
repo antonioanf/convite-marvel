@@ -85,7 +85,7 @@ Funcionam no convite inteiro, menos sobre campos de texto, botões e links. Arra
 | Portal | desenhar um círculo fechado e soltar | anéis turquesa, violeta e dourado |
 | Energia cósmica | segurar com dois dedos (ou segurar bem longo, > 2,6 s) | azul, ciano, dourado e laranja |
 
-- **Motor** (`src/poderes/`): `gestos.ts` reconhece os gestos (no pacote principal, pequeno); `acionar.ts` baixa o motor sob demanda; `motor.ts` é um chunk separado (~19 KB gzip) que só baixa perto da seção PODERES ou no primeiro gesto. `sim.ts` simula (raios fractais, ondas de choque, rachaduras com brasa esfriando, pedras com física, fumaça, feixe, névoa, portal, esferas com rastro de cometa); o WebGL (`gl/`) desenha com bloom e distorção (refração das ondas, lente do portal, ar ondulando de calor). Sem WebGL, ou se o aparelho ficar abaixo de ~28 fps, cai para o canvas 2D (`render2d.ts`).
+- **Motor** (`src/poderes/`): `gestos.ts` reconhece os gestos (no pacote principal, pequeno); `acionar.ts` baixa o motor sob demanda; `motor.ts` é um chunk separado (~19 KB gzip) que só baixa perto da seção PODERES ou no primeiro gesto. `sim.ts` simula (raios fractais, ondas de choque, rachaduras com brasa esfriando, pedras com física, fumaça, feixe, névoa, portal, esferas com rastro de cometa); o WebGL (`gl/`) desenha com bloom e distorção (refração das ondas, lente do portal, ar ondulando de calor). Sem WebGL, ou se o aparelho ficar abaixo de ~28 fps, cai para o canvas 2D (`render2d.ts`). O renderizador WebGL é outro chunk (`gl/renderGL.ts`): se ele não baixar, se um shader não compilar ou se o WebGL der erro no meio de um efeito, o motor passa sozinho para o 2D (num canvas novo — um canvas que já teve WebGL não aceita 2D). Se um chunk dos efeitos não baixar, há mais 2 tentativas por outro endereço (`?tentativa=N`, porque o Safari guarda a falha do `import()`); sem motor nenhum, cada poder vira o brilho suave e continua contando.
 - **Convite reage:** tremor, ondulação, levitação (magia) e puxão do portal nos cartões, só com `translate`/`rotate`/`scale`.
 - **Segurança:** no máximo 3 clarões por segundo, nunca branco puro em tela cheia (opacidade ≤ 0,55); com `prefers-reduced-motion` cada poder vira só um brilho suave colorido; partículas limitadas (300 no WebGL, 120 no 2D); o motor para com a aba em segundo plano e quando não há efeito vivo; enquanto um poder roda, os efeitos de fundo do hero ficam pausados.
 - **Seção PODERES:** mão-fantasma animada para cada gesto, botão "Disparar" e o medidor "PODERES n/6" (guardado no aparelho). Com os 6, destrava a SOBRECARGA: tudo junto por ~3 s, terminando em "TODOS OS PODERES ATIVADOS. TE ESPERO NA FESTA!".
@@ -98,9 +98,16 @@ Funcionam no convite inteiro, menos sobre campos de texto, botões e links. Arra
 |---|---|
 | `?modo=leve` / `?modo=normal` | Força o modo leve / normal (o normal não cai para o leve sozinho) |
 | `?motor=2d` | Força o fallback 2D dos poderes |
+| `?debug=1` | Painel no canto de cima: efeitos em WebGL ou 2D, estado do áudio (running/suspended/interrupted), reduced-motion, último gesto reconhecido e erros capturados — para pedir um print a quem testou |
 | `?agora=2026-11-26T10:00` | Simula a data/hora ("É hoje" com explosão cósmica; `2026-11-27T10:00` mostra "Missão cumprida") |
 | `?abrir=1` | Pula a abertura |
 | `?teste=1` | Expõe `window.__convite` (poderes e acionar) para os testes |
+
+### iPhone (Safari)
+
+- **Som:** o iOS só libera o Web Audio dentro de um toque. O contexto é criado, retomado (`resume()`) e "destravado" com um buffer silencioso no primeiro `touchend` da abertura, de forma síncrona. Se o iOS suspender ou interromper o som (ligação, outro app, segundo plano), ele é retomado ao voltar para a aba e, se precisar, no próximo toque. A chave de silencioso do iPhone corta o Web Audio: na primeira visita aparece a dica "Ative o som do iPhone 🔊".
+- **Gestos:** Touch Events passivos (no iPhone, Pointer Events recebem `pointercancel` assim que a página rola, e o gesto morreria). Toques a menos de 20 px das bordas laterais são ignorados (gesto de voltar do Safari). Sem vibração no iPhone: as chamadas são ignoradas sem erro.
+- `node scripts/iphone.mjs` roda os testes no WebKit do Playwright emulando o iPhone 13 (`npx playwright install webkit` uma vez): abertura, os 6 gestos, borda, shader quebrado → 2D, chunk que não baixa → novas tentativas. O WebKit do Playwright no Windows/Linux não tem Web Audio: o som só dá para conferir num iPhone (com `?debug=1`).
 
 ### Scripts (Playwright, Chromium emulando Pixel 5)
 

@@ -8,17 +8,31 @@ import { PODERES, infoPoder, type PoderId } from './catalogo'
 import { poderes } from './estado'
 import type { Pt } from '../lib/fx/raio'
 import { perf } from '../lib/perf'
+import { diag } from '../lib/diag'
+import { importarComRetry } from '../lib/chunks'
 
 let motorP: Promise<Motor | null> | null = null
 let motor: Motor | null = null
+/** O motor não pôde ser carregado nem criado: os poderes viram o brilho suave (e continuam contando). */
+let semMotor = false
+const leve = () => perf.reducedMotion || semMotor
+
+/** Baixa o chunk do motor; se a rede falhar, tenta de novo (até 3 vezes, por outro endereço). */
+const importarMotor = () => importarComRetry('motor', () => import('./motor'))
 
 /** Baixa e liga o motor (uma vez). Chamado perto da seção PODERES ou no primeiro gesto. */
 export function carregarMotor() {
   if (perf.reducedMotion) return Promise.resolve(null)
-  return (motorP ??= import('./motor')
-    .then((m) => (motor = m.criarMotor((id) => poderes.marcar(id))))
+  if (!motorP) diag.setMotor('carregando')
+  return (motorP ??= importarMotor()
+    .then((m) => m.criarMotor((id) => poderes.marcar(id)))
+    .then((m) => (motor = m))
     .catch((e) => {
+      // sem chunk ou sem como desenhar (nem WebGL nem 2D): fica o brilho suave
       console.warn('[convite] motor dos poderes indisponível', e)
+      diag.erro('motor', e)
+      diag.setMotor('brilho (sem motor)')
+      semMotor = true
       return null
     }))
 }
@@ -57,16 +71,16 @@ let pontoCosmico: Pt | null = null
 
 export const acionar = {
   tempestade(p: Pt) {
-    if (perf.reducedMotion) return suave(p, 'tempestade')
+    if (leve()) return suave(p, 'tempestade')
     comMotor((m) => m.tempestade(p))
   },
   impacto(p: Pt) {
-    if (perf.reducedMotion) return suave(p, 'impacto')
+    if (leve()) return suave(p, 'impacto')
     comMotor((m) => m.impacto(p))
   },
   carga(p: Pt) {
     pontoCarga = p
-    if (perf.reducedMotion) return
+    if (leve()) return
     comMotor((m) => m.carga(p))
   },
   cargaMover(p: Pt) {
@@ -74,7 +88,7 @@ export const acionar = {
     if (motor) motor.cargaMover(p)
   },
   cargaSoltar() {
-    if (perf.reducedMotion) {
+    if (leve()) {
       if (pontoCarga) suave(pontoCarga, 'rajada')
       pontoCarga = null
       return
@@ -83,10 +97,10 @@ export const acionar = {
   },
   cargaCancelar() {
     pontoCarga = null
-    if (!perf.reducedMotion) comMotor((m) => m.cargaCancelar())
+    if (!leve()) comMotor((m) => m.cargaCancelar())
   },
   magia(p: Pt) {
-    if (perf.reducedMotion) {
+    if (leve()) {
       if (!magiaSuave) suave(p, 'magia')
       magiaSuave = true
       return
@@ -96,15 +110,15 @@ export const acionar = {
   },
   magiaFim() {
     magiaSuave = false
-    if (!perf.reducedMotion) comMotor((m) => m.magiaFim())
+    if (!leve()) comMotor((m) => m.magiaFim())
   },
   portal(c: Pt, r: number) {
-    if (perf.reducedMotion) return suave(c, 'portal')
+    if (leve()) return suave(c, 'portal')
     comMotor((m) => m.portal(c, r))
   },
   cosmico(c: Pt) {
     pontoCosmico = c
-    if (perf.reducedMotion) return
+    if (leve()) return
     comMotor((m) => m.cosmico(c))
   },
   cosmicoMover(c: Pt) {
@@ -112,7 +126,7 @@ export const acionar = {
     if (motor) motor.cosmicoMover(c)
   },
   cosmicoSoltar() {
-    if (perf.reducedMotion) {
+    if (leve()) {
       if (pontoCosmico) suave(pontoCosmico, 'cosmico')
       pontoCosmico = null
       return
@@ -122,13 +136,13 @@ export const acionar = {
 
   /** Portal da confirmação (de onde sai a credencial): não conta no medidor. */
   portalCredencial(c: Pt, r: number) {
-    if (perf.reducedMotion) return brilhoSuave(c, 'portal')
+    if (leve()) return brilhoSuave(c, 'portal')
     comMotor((m) => m.portal(c, r, false))
   },
 
   /** Explosão de energia cósmica decorativa (contagem no dia da festa): não conta no medidor. */
   async festa(c: Pt) {
-    if (perf.reducedMotion) return brilhoSuave(c, 'cosmico')
+    if (leve()) return brilhoSuave(c, 'cosmico')
     const m = await carregarMotor()
     if (!m || m.ocupado()) return
     m.cosmico(c)
@@ -137,7 +151,7 @@ export const acionar = {
 
   /** Botão "Disparar" da seção PODERES. */
   async demo(id: PoderId) {
-    if (perf.reducedMotion) return suave(centro(), id)
+    if (leve()) return suave(centro(), id)
     const m = await carregarMotor()
     if (m) await m.demo(id)
     else suave(centro(), id)
@@ -148,12 +162,13 @@ export const acionar = {
     const W = innerWidth
     const H = innerHeight
     const espera = (ms: number) => new Promise((r) => setTimeout(r, ms))
-    if (perf.reducedMotion) {
+    const brilhos = () => {
       for (const [i, p] of PODERES.entries()) setTimeout(() => brilhoSuave({ x: W * (0.2 + 0.6 * ((i % 3) / 2)), y: H * (0.35 + 0.2 * Math.floor(i / 3)) }, p.id), i * 380)
       return espera(2600)
     }
+    if (leve()) return brilhos()
     const m = await carregarMotor()
-    if (!m) return espera(400)
+    if (!m) return brilhos()
     m.tempestade({ x: W * 0.3, y: H * 0.58 })
     setTimeout(() => m.portal({ x: W / 2, y: H * 0.4 }, Math.min(W, H) * 0.28), 350)
     setTimeout(() => m.impacto({ x: W * 0.72, y: H * 0.66 }), 700)

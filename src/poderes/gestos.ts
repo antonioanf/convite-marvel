@@ -7,11 +7,18 @@
  *   PORTAL      desenhar UM círculo fechado e soltar
  *   CÓSMICA     segurar com dois dedos parados
  * Toque com Touch Events passivos (a rolagem vertical nativa continua igual) e mouse com Pointer Events.
+ * Por que Touch Events no dedo (e não Pointer Events): no Safari do iPhone, assim que a página
+ * começa a rolar, o navegador manda pointercancel e o gesto morre (um círculo ou o arrasto da
+ * Tempestade quase sempre mexe um pouco na vertical). Os Touch Events continuam chegando durante a
+ * rolagem, em iOS e Android. O CSS (touch-action no html) tira o zoom de toque duplo.
+ * Toques que começam a menos de 20 px das bordas laterais são ignorados: é ali que o Safari
+ * faz o gesto de voltar/avançar.
  * Também deixa o rastro de faíscas elétricas leves do dedo (canvas 2D).
  */
 import { acionar, carregarMotor } from './acionar'
 import { fx2d } from '../lib/fx/camada2d'
 import { perf } from '../lib/perf'
+import { diag } from '../lib/diag'
 
 interface Amostra {
   x: number
@@ -33,6 +40,8 @@ interface Gesto {
 }
 
 const SEGURAR_MS = 420
+/** faixa das bordas laterais reservada ao gesto de voltar/avançar do Safari */
+const BORDA = 20
 const BLOQUEIO = 'input, textarea, select, button, a, label, [role="button"], .btn, [data-sem-gesto]'
 
 const bloqueado = (alvo: EventTarget | null) => {
@@ -57,6 +66,7 @@ function comecar(x: number, y: number, t = performance.now()) {
   atual.hold = window.setTimeout(() => {
     if (g !== atual || atual.estado !== 'livre') return
     atual.estado = 'carga'
+    diag.gesto('segurar (rajada)')
     menuBloqueado = true
     acionar.carga({ x: atual.x, y: atual.y })
   }, SEGURAR_MS)
@@ -85,7 +95,10 @@ function mover(x: number, y: number, t = performance.now()) {
 
   if (g.estado === 'livre' && Math.abs(g.giro) >= Math.PI * 3) {
     const r = raioMedio(g.pts.slice(-40))
-    if (r > 18 && r < 220) g.estado = 'magia'
+    if (r > 18 && r < 220) {
+      g.estado = 'magia'
+      diag.gesto('círculos (magia)')
+    }
   }
   if (g.estado === 'magia') acionar.magia({ x, y })
   else if (g.estado === 'carga') acionar.cargaMover({ x, y })
@@ -129,6 +142,7 @@ function terminar(cancelado = false, tEv = performance.now()) {
 
   // TEMPESTADE: rápido, para baixo, saindo do alto da tela
   if (e.y0 < H * 0.4 && dy > 110 && Math.abs(dx) < dy * 0.7 && dur < 520 && dy / dur > 0.45) {
+    diag.gesto('arrasto p/ baixo (tempestade)')
     acionar.tempestade({ x: e.x, y: e.y })
     return
   }
@@ -142,6 +156,7 @@ function terminar(cancelado = false, tEv = performance.now()) {
     if (diam > 80 && fecha < Math.max(45, diam * 0.5)) {
       const cx = xs.reduce((a, b) => a + b, 0) / xs.length
       const cy = ys.reduce((a, b) => a + b, 0) / ys.length
+      diag.gesto('círculo fechado (portal)')
       acionar.portal({ x: cx, y: cy }, raioMedio(e.pts))
       return
     }
@@ -151,6 +166,7 @@ function terminar(cancelado = false, tEv = performance.now()) {
     const u = ultimoToque
     if (u && t - u.t < 340 && Math.hypot(e.x - u.x, e.y - u.y) < 46) {
       ultimoToque = null
+      diag.gesto('toque duplo (impacto)')
       acionar.impacto({ x: e.x, y: e.y })
     } else {
       ultimoToque = { x: e.x, y: e.y, t }
@@ -170,6 +186,7 @@ function doisComecar(a: Touch, b: Touch) {
   d.timer = window.setTimeout(() => {
     if (dois !== d) return
     d.ativo = true
+    diag.gesto('dois dedos (cósmica)')
     acionar.cosmico({ x: d.x, y: d.y })
   }, 450)
   void carregarMotor()
@@ -204,7 +221,8 @@ export function iniciarGestos() {
     'touchstart',
     (e) => {
       if (e.touches.length === 1) {
-        ignorar = bloqueado(e.target)
+        const x = e.touches[0].clientX
+        ignorar = bloqueado(e.target) || x < BORDA || x > innerWidth - BORDA
         if (!ignorar) comecar(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)
       } else if (e.touches.length === 2 && !ignorar) doisComecar(e.touches[0], e.touches[1])
       else {

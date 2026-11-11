@@ -11,6 +11,7 @@ import { appState } from '../lib/appState'
 import { perf, prefersReducedMotion } from '../lib/perf'
 import { vibrate } from '../lib/haptics'
 import { som } from '../lib/audio'
+import { mostrarDicaSom } from '../lib/dicaSom'
 import { debug } from '../lib/debug'
 import { loadApp } from '../lib/appLoader'
 import { sfx } from '../lib/sfx'
@@ -220,8 +221,12 @@ export function initIntro() {
     await wait(reduced ? 300 : 260)
     storm.parar()
     el.remove()
+    // iPhone: a chave de silencioso corta o som — dica uma vez só, com o convite já aberto
+    mostrarDicaSom(1400)
   }
 
+  // iPhone: o áudio destrava já no touchend do toque de abertura (antes do click), de forma síncrona
+  el.addEventListener('touchend', () => som.start(), { passive: true })
   el.addEventListener('click', open)
   el.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') open(e)

@@ -5,8 +5,15 @@
  *  - os efeitos (lib/sfx.ts) usam o mesmo contexto e uma sala com eco compartilhada.
  * O botão de mudo (sempre visível) desliga tudo; ao religar, a trilha toca mais uma vez.
  * O contexto só pode ser criado num toque (regra dos navegadores): o toque de abertura.
+ *
+ * iPhone (Safari): o contexto só "destrava" dentro de um toque, de forma síncrona — por isso
+ * start() cria, chama resume() e toca um buffer silencioso no próprio handler, sem await antes.
+ * O iOS também suspende ou "interrompe" o contexto (ligação, outro app tocando, segundo plano);
+ * qualquer toque seguinte destrava de novo (destravar(), ouvindo touchend/click na página).
+ * A chave de silencioso do iPhone corta o Web Audio: a dica "Ative o som do iPhone" avisa.
  */
 import { convite } from '../config/convite'
+import { diag } from './diag'
 
 type Listener = () => void
 type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext }
@@ -193,10 +200,34 @@ export function salaEco() {
   return eco
 }
 
+/** Toca um buffer silencioso de 1 amostra: no iOS isso, dentro de um toque, destrava a saída. */
+function silencio(c: AudioContext) {
+  try {
+    const s = c.createBufferSource()
+    s.buffer = c.createBuffer(1, 1, c.sampleRate)
+    s.connect(c.destination)
+    s.start(0)
+  } catch {
+    /* nada */
+  }
+}
+
+/** Estado do contexto: 'running' | 'suspended' | 'interrupted' (iOS) | 'closed' | 'sem contexto'. */
+const estado = () => (ctx ? (ctx.state as string) : 'sem contexto')
+
+/** Retoma o contexto se o iOS (ou o segundo plano) o parou. Deve rodar dentro de um toque. */
+function destravar() {
+  if (!ctx || muted || ctx.state === 'closed') return
+  if (estado() !== 'running') {
+    silencio(ctx)
+    ctx.resume().catch((e) => diag.erro('áudio resume', e))
+  }
+}
+
 /** Contexto de áudio pronto para os efeitos (null se mudo, sem som no config ou antes do toque). */
 export function audioContext() {
   if (!convite.musica || muted || !ctx || ctx.state === 'closed') return null
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+  if (estado() !== 'running') ctx.resume().catch(() => {})
   return ctx
 }
 /** Saída geral (respeita o mudo). */
@@ -206,6 +237,7 @@ export const som = {
   available: convite.musica,
   isMuted: () => muted,
   isMusicPlaying: () => musicPlaying,
+  estado,
   subscribe(l: Listener) {
     listeners.add(l)
     return () => {
@@ -219,6 +251,14 @@ export const som = {
       const AC = window.AudioContext || (window as WebkitWindow).webkitAudioContext
       if (!AC) return
       ctx = new AC()
+      // síncrono, ainda dentro do toque: resume + buffer silencioso (o que o iOS exige)
+      silencio(ctx)
+      ctx.resume().catch((e) => diag.erro('áudio resume', e))
+      ctx.onstatechange = () => {
+        emit()
+        // iOS: 'interrupted' (ligação, Siri, outro app) — tenta voltar; se não der, o próximo toque destrava
+        if (estado() === 'interrupted' && !document.hidden && !muted) ctx?.resume().catch(() => {})
+      }
       master = ctx.createGain()
       master.gain.value = VOL
       // um compressor leve evita estourar quando trovão e trilha somam
@@ -226,11 +266,12 @@ export const som = {
       comp.threshold.value = -14
       comp.ratio.value = 4
       master.connect(comp).connect(ctx.destination)
-      ctx.resume().catch(() => {})
       startMusic()
-    } catch {
+    } catch (e) {
+      diag.erro('áudio', e)
       ctx = null
     }
+    emit()
   },
   toggleMute() {
     if (!ctx) {
@@ -240,6 +281,7 @@ export const som = {
       return
     }
     muted = !muted
+    if (!muted) destravar()
     if (master) master.gain.setTargetAtTime(muted ? 0 : VOL, ctx.currentTime, 0.05)
     if (muted) stopMusic()
     else startMusic()
@@ -248,10 +290,14 @@ export const som = {
 }
 
 if (typeof document !== 'undefined') {
-  // app em segundo plano: suspende o contexto (a trilha para no ponto e continua ao voltar)
+  // app em segundo plano: suspende o contexto (a trilha para no ponto e continua ao voltar).
+  // Ao voltar, tenta retomar ('suspended' ou 'interrupted'); se o iOS recusar fora de um toque,
+  // o próximo toque destrava (abaixo).
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return
     if (document.hidden) ctx.suspend().catch(() => {})
-    else if (!muted) ctx.resume().catch(() => {})
+    else if (!muted && estado() !== 'running') ctx.resume().catch(() => {})
   })
+  // qualquer toque na página destrava o contexto, se o iOS o tiver parado
+  for (const tipo of ['touchend', 'click'] as const) document.addEventListener(tipo, destravar, { capture: true, passive: true })
 }

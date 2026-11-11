@@ -92,11 +92,29 @@ function prefetchApp(): Plugin {
   }
 }
 
+/**
+ * Chunks dos efeitos com nome conhecido (versão do build no lugar do hash), para o app poder pedir
+ * de novo por outro endereço se o download falhar (lib/chunks.ts). Os demais seguem com hash.
+ */
+const versao = Date.now().toString(36)
+const CHUNKS: Record<string, string> = {
+  'src/poderes/motor.ts': `assets/motor-${versao}.js`,
+  'src/poderes/gl/renderGL.ts': `assets/efeitos-gl-${versao}.js`,
+}
+const nomeChunk = (c: { facadeModuleId?: string | null }) => {
+  const id = c.facadeModuleId?.split('\\').join('/') ?? ''
+  return Object.entries(CHUNKS).find(([k]) => id.endsWith(k))?.[1] ?? 'assets/[name]-[hash].js'
+}
+
 export default defineConfig({
   plugins: [react(), tailwindcss(), convitePlugin(), prefetchApp()],
+  define: {
+    __CHUNKS__: JSON.stringify({ motor: CHUNKS['src/poderes/motor.ts'], 'efeitos-gl': CHUNKS['src/poderes/gl/renderGL.ts'] }),
+  },
   build: {
     target: 'es2020',
     cssMinify: true,
+    rolldownOptions: { output: { chunkFileNames: nomeChunk } },
   },
   server: { host: false },
 })

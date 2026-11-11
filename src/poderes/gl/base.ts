@@ -23,6 +23,14 @@ float fbm(vec2 p) {
   return v;
 }`
 
+/** highp no fragmento só onde existe (todo iPhone com WebGL tem; alguns Android antigos não). */
+const PRECISAO = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+`
+
 export interface Prog {
   p: WebGLProgram
   u: Record<string, WebGLUniformLocation | null>
@@ -44,7 +52,7 @@ function compilar(gl: GL, tipo: number, src: string) {
 export function programa(gl: GL, vs: string, fs: string, uniforms: string[], attribs: string[] = ['aPos']): Prog {
   const p = gl.createProgram()!
   gl.attachShader(p, compilar(gl, gl.VERTEX_SHADER, vs))
-  gl.attachShader(p, compilar(gl, gl.FRAGMENT_SHADER, 'precision highp float;\n' + fs))
+  gl.attachShader(p, compilar(gl, gl.FRAGMENT_SHADER, PRECISAO + fs))
   gl.linkProgram(p)
   if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error('link: ' + gl.getProgramInfoLog(p))
   const u: Prog['u'] = {}

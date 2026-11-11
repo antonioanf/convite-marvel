@@ -5,6 +5,7 @@
  *  ?abrir=1                    pula a intro (útil para screenshots)
  *  ?teste=1                    expõe window.__convite para os testes automáticos
  *  ?motor=2d                   força o fallback 2D dos poderes (sem WebGL)
+ *  ?debug=1                    painel de diagnóstico no canto (lib/diag.ts, lib/painelDiag.ts)
  */
 const params = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams()
 
