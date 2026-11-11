@@ -4,19 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { convite } from './src/config/convite.ts'
 import { buildIcs } from './src/lib/calendar.ts'
 import { temaCss } from './src/config/tema.ts'
-import fs from 'node:fs'
-import sharp from 'sharp'
+import { emblemaSvg } from './src/lib/emblema.ts'
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/**
- * Lê src/config/convite.ts e:
- *  - preenche título, descrição, Open Graph e theme-color no index.html;
- *  - injeta a paleta como variáveis CSS (sem "piscar" a cor padrão);
- *  - gera /convite.ics (arquivo de agenda) no dev e no build.
- */
-/** "16 · 05 · 2027" no fuso da festa */
+/** "26 · 11 · 2026" no fuso da festa */
 function dataCurta() {
   return new Intl.DateTimeFormat('pt-BR', { timeZone: convite.festa.fusoHorario, day: '2-digit', month: '2-digit', year: 'numeric' })
     .format(new Date(convite.festa.dataHora))
@@ -24,37 +17,38 @@ function dataCurta() {
     .join(' · ')
 }
 
-/** Borboleta da intro (npm run borboleta): embutida como data URI + proporção, para a intro aparecer na hora. */
-async function borboleta() {
-  const file = new URL('./src/intro/borboleta.webp', import.meta.url)
-  const buf = fs.readFileSync(file)
-  const { width = 1, height = 1 } = await sharp(buf).metadata()
-  return { uri: `data:image/webp;base64,${buf.toString('base64')}`, ratio: `${width} / ${height}` }
-}
-
-async function convitePlugin(): Promise<Plugin> {
+/**
+ * Lê src/config/convite.ts e:
+ *  - preenche título, descrição, Open Graph e theme-color no index.html;
+ *  - injeta a paleta como variáveis CSS (sem "piscar" a cor padrão);
+ *  - embute o emblema na intro (aparece junto com o HTML);
+ *  - gera /convite.ics (agenda) e /favicon.svg (o emblema) no dev e no build.
+ */
+function convitePlugin(): Plugin {
   const p = convite.paleta
-  const bf = await borboleta()
-  const hero = convite.fotoPrincipal
-  const palette = temaCss(p)
+  const hero = convite.heroi.foto
+  const favicon = emblemaSvg(p)
   // TODO no config: sem site.url a imagem fica relativa e o WhatsApp não mostra a prévia
   const ogImage = /^https?:/.test(convite.site.imagemOg)
     ? convite.site.imagemOg
     : (convite.site.url || '') + convite.site.imagemOg
+  const heroSrcset = hero?.src && hero.srcPequena ? `${hero.srcPequena} 600w, ${hero.src} ${hero.largura ?? 1200}w` : hero?.src ?? ''
   const vars: Record<string, string> = {
     '%TITULO%': esc(convite.site.titulo),
     '%DESCRICAO%': esc(convite.site.descricao),
     '%URL%': esc(convite.site.url),
     '%OG_IMAGE%': esc(ogImage),
-    '%THEME%': p.perola,
+    '%THEME%': p.ceu,
     '%NOME%': esc(convite.crianca.nome),
+    '%HEROI%': esc(convite.heroi.nome),
     '%IDADE%': String(convite.crianca.idade),
     '%DATA_CURTA%': dataCurta(),
-    '%PALETA%': palette,
-    '%HERO_SRC%': esc(hero.src ?? ''),
-    '%HERO_SRCSET%': esc(hero.srcPequena && hero.src ? `${hero.srcPequena} 600w, ${hero.src} ${hero.largura ?? 1200}w` : hero.src ?? ''),
-    '%BORBOLETA_RATIO%': bf.ratio,
-    '%BORBOLETA%': bf.uri,
+    '%PALETA%': temaCss(p),
+    // foto do hero (se houver): começa a baixar junto com o HTML
+    '%HERO_PRELOAD%': hero?.src
+      ? `<link rel="preload" as="image" href="${esc(hero.src)}" imagesrcset="${esc(heroSrcset)}" imagesizes="(max-width: 480px) 92vw, 450px" fetchpriority="high" />`
+      : '',
+    '%EMBLEMA%': emblemaSvg(p, { glow: true, attrs: 'class="cv-emb-svg"' }),
   }
   return {
     name: 'convite-config',
@@ -63,12 +57,17 @@ async function convitePlugin(): Promise<Plugin> {
       handler: (html) => Object.entries(vars).reduce((acc, [k, v]) => acc.split(k).join(v), html),
     },
     configureServer(server) {
+      server.middlewares.use('/favicon.svg', (_req, res) => {
+        res.setHeader('Content-Type', 'image/svg+xml')
+        res.end(favicon)
+      })
       server.middlewares.use('/convite.ics', (_req, res) => {
         res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
         res.end(buildIcs(convite))
       })
     },
     generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'favicon.svg', source: favicon })
       this.emitFile({ type: 'asset', fileName: 'convite.ics', source: buildIcs(convite) })
     },
   }
@@ -99,8 +98,6 @@ export default defineConfig({
   build: {
     target: 'es2020',
     cssMinify: true,
-    // A cena 3D (three.js) é um chunk separado, carregado só depois da intro.
-    chunkSizeWarningLimit: 1200,
   },
   server: { host: false },
 })

@@ -2,46 +2,40 @@
  * ============================================================
  *  CONFIGURAÇÃO DO CONVITE
  *  Todo o conteúdo do convite vem deste arquivo.
- *  Para um novo cliente, edite só aqui e troque os arquivos
- *  em /public (fotos e música).
+ *  Para um novo cliente, edite só aqui (e as fotos em /public/fotos).
  *
  *  Procure por "TODO" para ver o que ainda falta preencher.
  * ============================================================
  */
 
 export interface Foto {
-  /** Caminho a partir de /public, ex.: "/fotos/ensaio-1.webp". Sem `src` = placeholder bonito. */
+  /** Caminho a partir de /public, ex.: "/fotos/joao-heroi.webp". */
   src?: string
-  /** Versão menor para o carrossel (opcional), ex.: "/fotos/ensaio-1-600.webp" */
+  /** Versão menor (opcional), ex.: "/fotos/joao-heroi-600.webp" */
   srcPequena?: string
   /** Descrição da foto (acessibilidade). */
   alt: string
-  /** Tamanho original em px (evita "pulos" no carregamento e define o formato no carrossel). */
+  /** Tamanho original em px (evita "pulos" no carregamento). */
   largura?: number
   altura?: number
-  /** Ponto de foco do recorte (CSS object-position), ex.: "50% 35%" = rosto um pouco acima do meio. */
+  /** Ponto de foco do recorte (CSS object-position), ex.: "50% 35%". */
   foco?: string
 }
 
 export interface Paleta {
-  /** Fundo perolado (parede clara do estúdio) */
-  perola: string
-  /** Lavanda clara (balões claros) */
-  lavanda: string
-  /** Lilás (vestido / balões médios) */
-  lilas: string
-  /** Violeta (balões mais fortes) */
-  violeta: string
-  /** Roxo profundo: cor do texto principal (no lugar do preto) */
-  roxo: string
-  /** Rosa (glacê do bolo) */
-  rosa: string
-  /** Magenta: acento (borboleta rosa / número do bolo) */
-  magenta: string
-  /** Prata iridescente (balões metalizados) + os dois toques do gradiente holográfico */
-  prata: string
-  holoCiano: string
-  holoRosa: string
+  /** Vermelho herói (faixa do título, botões principais) */
+  vermelho: string
+  /** Azul royal (pontas da faixa, uniforme) */
+  azul: string
+  /** Azul-marinho: cor do texto principal e dos contornos (no lugar do preto) */
+  marinho: string
+  /** Amarelo herói (explosões, destaques) */
+  amarelo: string
+  /** Azul-céu (fundo) */
+  ceu: string
+  branco: string
+  /** Ciano neon: só para efeitos de energia e HUD */
+  ciano: string
 }
 
 export interface ConviteConfig {
@@ -51,12 +45,21 @@ export interface ConviteConfig {
     /** Frase curta que aparece no convite */
     frase: string
   }
+  heroi: {
+    /** Nome de herói, ex.: "Super João Lucas" */
+    nome: string
+    /**
+     * Foto do hero (opcional). Preenchida = a foto aparece num quadro de HQ com a explosão "5 ANOS!".
+     * Vazia (`null`) = aparece o herói ilustrado em SVG.
+     */
+    foto: Foto | null
+  }
   festa: {
-    /** Data e hora no formato ISO com fuso, ex.: "2027-05-16T16:00:00-03:00" */
+    /** Data e hora no formato ISO com fuso, ex.: "2026-11-26T15:00:00-03:00" */
     dataHora: string
     /**
      * `false` enquanto o horário não estiver decidido: o convite mostra "horário a definir"
-     * e a agenda (.ics / Google) vira um evento de dia inteiro. A contagem usa o horário de `dataHora`.
+     * e a agenda (.ics / Google) vira um evento de dia inteiro.
      */
     horarioDefinido: boolean
     /** Duração aproximada (usada na agenda e para saber quando a festa acabou) */
@@ -64,28 +67,23 @@ export interface ConviteConfig {
     /** Fuso usado para exibir data/hora (IANA) */
     fusoHorario: string
     local: string
-    /** Vazio = linha escondida */
+    /** Vazio = "Endereço completo em breve" */
     endereco: string
     /** Link do Google Maps (botão "Como chegar"). Vazio = botão escondido */
     linkMapa: string
   }
   rsvp: {
-    /** WhatsApp dos pais: só dígitos, com DDI e DDD. Ex.: 5583999999999. Vazio = aviso no lugar do envio */
+    /** WhatsApp dos pais: só dígitos, com DDI e DDD. Ex.: 5585999999999. Vazio = aviso no lugar do envio */
     whatsapp: string
-    /** Data limite para confirmar (ISO), ex.: "2027-05-01". Vazio = sem prazo */
+    /** Data limite para confirmar (ISO), ex.: "2026-11-20". Vazio = sem prazo */
     prazo: string
   }
-  /** Assinatura no rodapé, ex.: "Com amor, papai e mamãe". Vazio = linha escondida */
+  /** Assinatura no rodapé, ex.: "Com carinho, papai e mamãe". Vazio = linha escondida */
   assinatura: string
-  /** Foto principal (hero) */
-  fotoPrincipal: Foto
-  /** Foto horizontal do cartão da idade */
-  fotoDestaque: Foto
-  /** Foto vertical da seção das velinhas */
-  fotoBolo: Foto
+  /** Fotos da galeria (quadros de HQ). Só aparece com `secoes.galeria: true`. */
   galeria: Foto[]
-  /** Caminho do mp3 em /public. `null` = sem música (o botão e os efeitos sonoros somem). */
-  musica: string | null
+  /** Música e efeitos sonoros gerados por código. `false` = convite mudo (o botão some). */
+  musica: boolean
   /** Pix para presentes. `null` = seção escondida. */
   pix: {
     chave: string
@@ -99,13 +97,13 @@ export interface ConviteConfig {
     contagem: boolean
     local: boolean
     galeria: boolean
-    velinhas: boolean
+    arena: boolean
     rsvp: boolean
     pix: boolean
   }
   /** Usado nas meta tags (prévia do link no WhatsApp) */
   site: {
-    /** Endereço final publicado, sem barra no final. Ex.: "https://convite-anna-liz.vercel.app" */
+    /** Endereço final publicado, sem barra no final. Ex.: "https://super-joao-lucas.vercel.app" */
     url: string
     titulo: string
     descricao: string
@@ -114,97 +112,64 @@ export interface ConviteConfig {
   }
 }
 
-const deitada: Foto = {
-  src: '/fotos/anna-deitada.webp',
-  srcPequena: '/fotos/anna-deitada-600.webp',
-  alt: 'Anna Liz deitada no chão, sorrindo com as mãos no rosto, de tiara de flores e vestido lilás, com balões lilás ao fundo',
-  largura: 890,
-  altura: 1600,
-  foco: '50% 70%',
-}
-const girando: Foto = {
-  src: '/fotos/anna-girando.webp',
-  srcPequena: '/fotos/anna-girando-600.webp',
-  alt: 'Anna Liz rodopiando com o vestido lilás, entre balões lilás e grandes borboletas metalizadas',
-  largura: 1200,
-  altura: 1048,
-  foco: '40% 50%',
-}
-const bolo: Foto = {
-  src: '/fotos/anna-bolo.webp',
-  srcPequena: '/fotos/anna-bolo-600.webp',
-  alt: 'Anna Liz de tiara olhando sorridente para o seu bolo cor-de-rosa com uma borboleta escrita Anna Liz',
-  largura: 888,
-  altura: 1600,
-  foco: '50% 97%',
-}
-const balao3: Foto = {
-  src: '/fotos/anna-balao3.webp',
-  srcPequena: '/fotos/anna-balao3-600.webp',
-  alt: 'Anna Liz deitada com a mão no rosto entre balões roxos metalizados e flores de balão',
-  largura: 1195,
-  altura: 1062,
-  foco: '0% 50%',
-}
-
 export const convite: ConviteConfig = {
   crianca: {
-    nome: 'Anna Liz',
-    idade: 4,
-    frase: 'Vem voar comigo nos meus 4 aninhos!',
+    nome: 'João Lucas',
+    idade: 5,
+    frase: 'Venha comemorar comigo com muita aventura!',
+  },
+  heroi: {
+    nome: 'Super João Lucas',
+    // Quando chegar a foto do João Lucas fantasiado: coloque em originais/, rode `npm run fotos` e troque `null` por:
+    // { src: '/fotos/joao-heroi.webp', srcPequena: '/fotos/joao-heroi-600.webp', alt: 'João Lucas fantasiado de super-herói', largura: 1200, altura: 1600, foco: '50% 30%' }
+    foto: null,
   },
   festa: {
-    dataHora: '2027-05-16T16:00:00-03:00',
+    dataHora: '2026-11-26T15:00:00-03:00',
     horarioDefinido: true,
-    duracaoHoras: 4,
+    duracaoHoras: 3,
     fusoHorario: 'America/Fortaleza',
-    local: 'Chácara São Pedro',
-    // TODO: endereço completo, ex.: 'Rua Tal, 123 – Bairro, Cidade-PB'
+    local: 'Enjoy Kids · Shopping Liv Mall',
+    // TODO: endereço completo, ex.: 'Av. Tal, 123 – Bairro, Cidade-CE'
     endereco: '',
     // TODO: link do Google Maps (abra o local no Maps → Compartilhar → Copiar link)
     linkMapa: '',
   },
   rsvp: {
-    // TODO: WhatsApp de quem recebe as confirmações (só dígitos, com 55 + DDD), ex.: '5583999999999'
+    // TODO: WhatsApp de quem recebe as confirmações (só dígitos, com 55 + DDD), ex.: '5585999999999'
     whatsapp: '',
-    // TODO: data limite para confirmar, ex.: '2027-05-01'
+    // TODO: data limite para confirmar, ex.: '2026-11-22'
     prazo: '',
   },
-  // TODO: assinatura do rodapé, ex.: 'Com amor, papai e mamãe'
+  // TODO: assinatura do rodapé, ex.: 'Com carinho, papai e mamãe'
   assinatura: '',
-  fotoPrincipal: deitada,
-  fotoDestaque: girando,
-  fotoBolo: bolo,
-  galeria: [deitada, girando, bolo, balao3],
-  musica: '/musica/caixinha-de-musica.mp3',
+  galeria: [],
+  musica: true,
   // TODO: Pix para presentes. Para mostrar a seção, troque `null` por:
-  // { chave: 'sua-chave', tipo: 'Celular', titular: 'Nome do titular', mensagem: 'Sua presença é o nosso maior presente! 💜' }
+  // { chave: 'sua-chave', tipo: 'Celular', titular: 'Nome do titular', mensagem: 'Sua presença é o nosso maior presente! 💙' }
   pix: null,
   paleta: {
-    perola: '#F6F2FA',
-    lavanda: '#E4D4F7',
-    lilas: '#C3A3EE',
-    violeta: '#8B5CF6',
-    roxo: '#3B1C6E',
-    rosa: '#F48FB8',
-    magenta: '#E0428A',
-    prata: '#E9E6F2',
-    holoCiano: '#A5F3FC',
-    holoRosa: '#F9A8D4',
+    vermelho: '#E63946',
+    azul: '#1D4ED8',
+    marinho: '#0B1F4D',
+    amarelo: '#FFD60A',
+    ceu: '#BFE3FF',
+    branco: '#FFFFFF',
+    ciano: '#22D3EE',
   },
   secoes: {
     contagem: true,
     local: true,
-    galeria: true,
-    velinhas: true,
+    galeria: false,
+    arena: true,
     rsvp: true,
     pix: true,
   },
   site: {
     // TODO: endereço publicado (sem barra no final). Sem ele, a imagem da prévia no WhatsApp não aparece.
     url: '',
-    titulo: 'Anna Liz · 4 aninhos',
-    descricao: 'Domingo, 16 de maio de 2027 · Chácara São Pedro. Vem voar comigo nos meus 4 aninhos! 🦋',
+    titulo: 'Super João Lucas · 5 anos',
+    descricao: 'Quinta-feira, 26 de novembro de 2026 · Enjoy Kids · Shopping Liv Mall. Venha comemorar comigo com muita aventura! ⚡',
     imagemOg: '/og.jpg',
   },
 }

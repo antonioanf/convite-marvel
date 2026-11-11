@@ -1,7 +1,10 @@
 /**
  * Transforma a paleta do config em variáveis CSS.
- * Também calcula os tons de TEXTO derivados (misturas com o roxo profundo), escolhidos
- * para passar no contraste AA (≥ 4,5:1) sobre o fundo perolado e sobre cartões brancos.
+ * Também calcula os tons de TEXTO derivados, escolhidos para passar no contraste AA (≥ 4,5:1)
+ * sobre o céu e sobre os quadros brancos:
+ *  - tinta-2 (texto secundário): marinho com um pouco de azul  → ~9,5:1 no céu
+ *  - vermelho-txt (texto pequeno vermelho): vermelho escurecido → ~5:1 no céu
+ * O vermelho puro só leva texto branco (5:1) ou aparece em títulos grandes.
  * Usado pelo vite.config.ts (injeta no index.html), pela moldura do desktop e pela imagem OG.
  */
 import type { Paleta } from './convite.ts'
@@ -21,23 +24,21 @@ export function mix(a: string, b: string, k: number) {
 
 export function temaVars(p: Paleta): Record<string, string> {
   return {
-    '--color-perola': p.perola,
-    '--color-lavanda': p.lavanda,
-    '--color-lilas': p.lilas,
-    '--color-violeta': p.violeta,
-    '--color-roxo': p.roxo,
-    '--color-rosa': p.rosa,
-    '--color-magenta': p.magenta,
-    '--color-prata': p.prata,
-    '--color-holo-ciano': p.holoCiano,
-    '--color-holo-rosa': p.holoRosa,
-    // tons de texto (contraste AA garantido sobre perolado/branco)
-    '--color-tinta-2': mix(p.roxo, p.perola, 0.78),
-    '--color-violeta-txt': mix(p.violeta, p.roxo, 0.6),
-    '--color-magenta-txt': mix(p.magenta, p.roxo, 0.6),
-    // gradiente dos botões principais (texto branco AA)
-    '--color-btn-a': mix(p.violeta, p.roxo, 0.82),
-    '--color-btn-b': mix(p.magenta, p.roxo, 0.86),
+    '--color-vermelho': p.vermelho,
+    '--color-azul': p.azul,
+    '--color-marinho': p.marinho,
+    '--color-amarelo': p.amarelo,
+    '--color-ceu': p.ceu,
+    '--color-branco': p.branco,
+    '--color-ciano': p.ciano,
+    // tons de texto (contraste AA garantido sobre céu/branco)
+    '--color-tinta-2': mix(p.marinho, p.azul, 0.7),
+    '--color-vermelho-txt': mix(p.vermelho, p.marinho, 0.7),
+    // tons de apoio (fundos e sombras, nunca texto)
+    '--color-vermelho-esc': mix(p.vermelho, p.marinho, 0.72),
+    '--color-azul-esc': mix(p.azul, p.marinho, 0.6),
+    '--color-ceu-claro': mix(p.ceu, p.branco, 0.45),
+    '--color-amarelo-esc': mix(p.amarelo, p.vermelho, 0.55),
   }
 }
 
