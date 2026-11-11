@@ -45,12 +45,13 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
   resize()
   addEventListener('resize', resize, { passive: true })
 
-  // brasas: quente (amarelo-branco), média (laranja), fria (vermelho escuro); poeira: azul-acinzentada; bokeh: disco macio
+  // brasas: quente (amarelo-branco), média (laranja), fria (vermelho escuro); poeira: dourada (luz do
+  // entardecer); bokeh: disco macio dourado ou rosado (luz desfocada perto da "câmera")
   const quente = sprite([[0, 'rgba(255,245,210,1)'], [0.2, 'rgba(255,200,110,.9)'], [0.45, 'rgba(255,120,30,.3)'], [1, 'rgba(255,80,0,0)']])
   const media = sprite([[0, 'rgba(255,190,110,1)'], [0.2, 'rgba(255,120,40,.8)'], [0.5, 'rgba(220,60,10,.25)'], [1, 'rgba(180,30,0,0)']])
   const fria = sprite([[0, 'rgba(230,80,30,.9)'], [0.3, 'rgba(160,30,10,.4)'], [1, 'rgba(100,10,0,0)']])
-  const poeira = sprite([[0, 'rgba(200,215,240,.9)'], [0.4, 'rgba(160,180,220,.25)'], [1, 'rgba(120,140,200,0)']])
-  const bokeh = sprite([[0, 'rgba(190,210,245,.35)'], [0.7, 'rgba(170,195,240,.22)'], [0.85, 'rgba(170,195,240,.08)'], [1, 'rgba(170,195,240,0)']])
+  const poeira = sprite([[0, 'rgba(255,230,170,.95)'], [0.4, 'rgba(245,183,60,.3)'], [1, 'rgba(230,140,40,0)']])
+  const bokeh = sprite([[0, 'rgba(255,200,120,.34)'], [0.7, 'rgba(255,170,90,.2)'], [0.85, 'rgba(255,150,90,.07)'], [1, 'rgba(255,150,90,0)']])
 
   const nova = (brasa: boolean, inicio = false): P => {
     const z = Math.random()

@@ -108,8 +108,10 @@ export interface Particula {
   seed: number
   /** chão para quicar (y em px) */
   chao?: number
-  /** atração para um ponto (portal, carga) */
-  alvo?: { x: number; y: number; forca: number; giro: number }
+  /** atração para um ponto (portal, carga); `mata` = some ao chegar a essa distância */
+  alvo?: { x: number; y: number; forca: number; giro: number; mata?: number }
+  /** só para quicar: perde energia a cada quique */
+  quique?: number
   aditiva: boolean
 }
 
@@ -312,7 +314,8 @@ export class Render {
       v[o++] = p.cor[0]
       v[o++] = p.cor[1]
       v[o++] = p.cor[2]
-      v[o++] = Math.max(0, p.a0 + (p.a1 - p.a0) * k)
+      // a0 > 1 = fica opaca por um tempo e só depois some
+      v[o++] = Math.min(1, Math.max(0, p.a0 + (p.a1 - p.a0) * k))
       v[o++] = p.tipo
       v[o++] = p.seed
     }

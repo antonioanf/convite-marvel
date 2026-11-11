@@ -2,17 +2,36 @@ import { memo, useEffect } from 'react'
 import { useLite, useOpened } from '../hooks/useStores'
 import { Cena } from '../components/cena/Cena'
 import { Hero } from '../components/hero/Hero'
+import { Countdown } from '../components/sections/Countdown'
+import { Missao } from '../components/sections/Missao'
+import { Poderes } from '../components/sections/Poderes'
+import { Rsvp } from '../components/sections/Rsvp'
+import { Pix } from '../components/sections/Pix'
+import { Footer } from '../components/sections/Footer'
 import { BottomBar } from '../components/ui/BottomBar'
 import { ProgressBar } from '../components/fun/ProgressBar'
+import { convite } from '../config/convite'
 import { perf } from '../lib/perf'
 import { initScroll, gsap, ScrollTrigger } from '../lib/scroll'
 import { appState } from '../lib/appState'
+import { iniciarGestos } from '../poderes/gestos'
+import { debug } from '../lib/debug'
+import { poderes } from '../poderes/estado'
+import { acionar } from '../poderes/acionar'
+
+const s = convite.secoes
 
 /** As seções não dependem de "aberto": ficam memorizadas para a abertura não redesenhar o convite inteiro. */
 const Sections = memo(function Sections() {
   return (
     <>
       <Hero />
+      {s.contagem && <Countdown />}
+      {s.local && <Missao />}
+      {s.poderes && <Poderes />}
+      {s.rsvp && <Rsvp />}
+      {s.pix && convite.pix && <Pix />}
+      <Footer />
     </>
   )
 })
@@ -35,12 +54,15 @@ export function App() {
       { rootMargin: '120px 0px' },
     )
     document.querySelectorAll('.page > section, .page > footer').forEach((el) => io.observe(el))
+    // testes automáticos
+    if (debug.teste) Object.assign(window, { __convite: { poderes, acionar } })
     return () => io.disconnect()
   }, [])
 
   useEffect(() => {
     if (!opened) return
     initScroll().start()
+    iniciarGestos()
     let ctx: gsap.Context | undefined
     if (!perf.reducedMotion) {
       ctx = gsap.context(() => {

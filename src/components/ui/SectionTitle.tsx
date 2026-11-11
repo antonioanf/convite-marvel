@@ -1,15 +1,16 @@
-/** Título editorial: rótulo mono + título serifado em itálico + índice "02/07". */
+/** Título de seção estilo trailer: rótulo na cor da seção + título em metal + índice "02/05". */
 export function SectionTitle({ kicker, title, id, index }: { kicker: string; title: string; id?: string; index?: string }) {
   return (
-    <header className="mb-5 flex items-end justify-between gap-4 px-1">
+    <header className="secao-titulo">
       <div className="min-w-0">
-        <p className="label">{kicker}</p>
-        <h2 id={id} className="serif mt-1.5 text-[44px] leading-[0.95] text-roxo">
+        <p className="rotulo acc-txt">{kicker}</p>
+        <h2 id={id} className="display metal mt-1">
           {title}
         </h2>
+        <span className="linha" aria-hidden="true" />
       </div>
       {index && (
-        <span className="label shrink-0 pb-1" aria-hidden="true">
+        <span className="mono shrink-0 pb-2 text-[13px] tracking-[0.2em] text-branco" aria-hidden="true">
           {index}
         </span>
       )}

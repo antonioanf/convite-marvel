@@ -26,9 +26,24 @@ function initialLite(): boolean {
 let lite = initialLite()
 const listeners = new Set<Listener>()
 
+let webgl: boolean | null = null
+
 export const perf = {
   reducedMotion: prefersReducedMotion(),
   isLite: () => lite,
+  /** O aparelho tem WebGL? (testado uma vez, com um canvas descartável) */
+  temWebgl() {
+    if (webgl !== null) return webgl
+    try {
+      const c = document.createElement('canvas')
+      const gl = c.getContext('webgl', { failIfMajorPerformanceCaveat: true })
+      webgl = !!gl
+      gl?.getExtension('WEBGL_lose_context')?.loseContext()
+    } catch {
+      webgl = false
+    }
+    return webgl
+  },
   /** Máximo de partículas ao mesmo tempo. */
   maxParticles: () => (lite ? 60 : 150),
   /** Chamado pelos efeitos se o FPS ficar baixo. */

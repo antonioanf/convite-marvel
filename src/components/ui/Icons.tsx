@@ -12,6 +12,7 @@ const paths = {
   microfone: 'M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3.5',
   whatsapp: 'M4 20l1.2-3.6A8 8 0 1 1 8 19zM9 9.2c.3 2.5 2.3 4.6 4.8 5l1-1.1 2 .9-.3 1.4c-3.8.4-7.6-3.3-7.3-7.2l1.4-.3.9 2z',
   fechar: 'M6 6l12 12M18 6L6 18',
+  baixar: 'M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14',
 } as const
 
 export type IconName = keyof typeof paths

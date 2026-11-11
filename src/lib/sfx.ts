@@ -203,15 +203,22 @@ export const sfx = {
     ruidoF(c, t, 1.6, 0.28, 'bandpass', 400, 1600, 0.4, 0.4)
     tom(c, 220, t, 1.6, 0.06, 'triangle', 330, 0.5)
   },
-  /** Energia cósmica: crescendo que explode numa onda. */
-  cosmico() {
+  /** Energia cósmica se juntando: sopro que sobe + brilho etéreo. */
+  cosmicoCarga(dur = 1.4) {
     const c = audioContext()
     if (!c) return
     const t = c.currentTime
-    ruidoF(c, t, 1.1, 0.35, 'bandpass', 200, 4000, 0.9)
-    tom(c, 82, t + 1, 1.8, 0.7, 'sine', 30, 0.6)
-    ruidoF(c, t + 1, 1.6, 0.5, 'lowpass', 2400, 120, 0.004, 0.6)
-    ;[1046.5, 1318.5, 1568].forEach((f, i) => tom(c, f, t + 1.05 + i * 0.05, 1.8, 0.02, 'sine', undefined, 0.7))
+    ruidoF(c, t, dur, 0.3, 'bandpass', 200, 3600, dur * 0.8)
+    ;[523.25, 659.25, 783.99].forEach((f, i) => tom(c, f, t + 0.2 + i * 0.18, dur, 0.018, 'sine', f * 1.5, 0.5))
+  },
+  /** A explosão numa onda de luz: pancada grave, estrondo e cintilar alto. */
+  cosmicoExplosao() {
+    const c = audioContext()
+    if (!c) return
+    const t = c.currentTime
+    tom(c, 82, t, 1.8, 0.7, 'sine', 30, 0.6)
+    ruidoF(c, t, 1.6, 0.5, 'lowpass', 2400, 120, 0.004, 0.6)
+    ;[1046.5, 1318.5, 1568].forEach((f, i) => tom(c, f, t + 0.05 + i * 0.05, 1.8, 0.02, 'sine', undefined, 0.7))
   },
   /** Fogo/plasma contínuo curto (sopro). */
   sopro(dur = 1.4) {

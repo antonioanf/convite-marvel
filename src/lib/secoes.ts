@@ -1,12 +1,11 @@
-/** Numeração das seções ("02/06") de acordo com as que estão ligadas no config. */
+/** Numeração das seções ("02/05") de acordo com as que estão ligadas no config. */
 import { convite } from '../config/convite'
 
 const s = convite.secoes
 const ordem = [
   s.contagem && 'contagem',
-  s.local && 'local',
-  s.galeria && 'galeria',
-  s.velinhas && 'velinhas',
+  s.local && 'missao',
+  s.poderes && 'poderes',
   s.rsvp && 'confirmar',
   s.pix && convite.pix && 'presentes',
 ].filter(Boolean) as string[]

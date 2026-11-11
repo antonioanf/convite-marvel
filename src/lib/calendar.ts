@@ -31,7 +31,7 @@ export function eventTimes(c: ConviteConfig) {
 }
 
 export function eventTitle(c: ConviteConfig) {
-  return `Aniversário de ${c.crianca.nome} 🦋 ${c.crianca.idade} anos`
+  return `Aniversário de ${c.crianca.nome} · ${c.crianca.idade} anos`
 }
 
 const where = (c: ConviteConfig) => [c.festa.local, c.festa.endereco].filter(Boolean).join(', ')
@@ -66,7 +66,7 @@ export function buildIcs(c: ConviteConfig): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Convite Borboleta//PT-BR',
+    'PRODID:-//Convite Missao JL//PT-BR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

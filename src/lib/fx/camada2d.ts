@@ -166,11 +166,14 @@ export const fx2d = {
     if (faiscas.length > max) faiscas.splice(0, faiscas.length - max)
     acordar()
   },
-  /** Clarão azul-claro suave (limitado a 3/s; nunca branco puro). */
-  clarao(forca = 1, cor?: string) {
+  /**
+   * Clarão suave na cor pedida (limitado a 3/s; nunca branco puro, opacidade ≤ CLARAO_MAX).
+   * `cor` = "r g b" do brilho principal; o padrão é o azul do relâmpago.
+   */
+  clarao(forca = 1, cor = '200 225 255', y = 25) {
     garantir()
     if (!flash || !podeClarear()) return
-    if (cor) flash.style.background = cor
+    flash.style.background = `radial-gradient(90% 60% at 50% ${y}%, rgb(${cor} / .85), rgb(${cor} / .3) 60%, rgb(${cor} / .08))`
     flash.animate(
       [{ opacity: 0 }, { opacity: CLARAO_MAX * forca, offset: 0.12 }, { opacity: CLARAO_MAX * forca * 0.25, offset: 0.32 }, { opacity: CLARAO_MAX * forca * 0.7, offset: 0.44 }, { opacity: 0 }],
       { duration: 560, easing: 'ease-out' },

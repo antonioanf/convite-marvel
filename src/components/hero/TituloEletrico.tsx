@@ -83,10 +83,11 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
       const r = gerarRaio({ x: a[0], y: a[1] }, { x: b[0], y: b[1] }, { niveis: 5, desvio: 0.28, galhos: 0.4 })
       return r.galhos.map((ga) => 'M' + ga.pts.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('L')).join(' ')
     }
+    // eletricidade: halo azul elétrico, corpo ciano, núcleo branco
     const camadas = (d: string, forte = 1) =>
-      `<path d="${d}" stroke="#4F8BFF" stroke-opacity="${0.28 * forte}" stroke-width="9"/>` +
-      `<path d="${d}" stroke="#9CC6FF" stroke-opacity="${0.8 * forte}" stroke-width="2.8"/>` +
-      `<path d="${d}" stroke="#F4FAFF" stroke-width="1.1"/>`
+      `<path d="${d}" stroke="#1E90FF" stroke-opacity="${0.32 * forte}" stroke-width="9"/>` +
+      `<path d="${d}" stroke="#22D3EE" stroke-opacity="${0.85 * forte}" stroke-width="2.8"/>` +
+      `<path d="${d}" stroke="#F2FEFF" stroke-width="1.1"/>`
     document.fonts.load(`104px ${FONTE}`).then(() => {
       if (cancelado) return
       const pts = mapear()
@@ -130,34 +131,46 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
     <div className="relative">
     <svg ref={svg} viewBox="0 0 400 186" className="titulo-svg block w-full overflow-visible" aria-hidden="true" focusable="false">
       <defs>
+        {/* aço polido refletindo o céu: dourado em cima, aço no meio, faixa vermelha embaixo */}
         <linearGradient id="tm1" gradientUnits="userSpaceOnUse" x1="0" y1="28" x2="0" y2="100">
-          <stop offset="0" stopColor="#F7F9FC" />
-          <stop offset=".38" stopColor="#CCD5E1" />
-          <stop offset=".5" stopColor="#626D7D" />
-          <stop offset=".62" stopColor="#A9B4C3" />
-          <stop offset="1" stopColor="#EEF2F7" />
+          <stop offset="0" stopColor="#FFF8EC" />
+          <stop offset=".2" stopColor="#FFDCA0" />
+          <stop offset=".4" stopColor="#E3E6EC" />
+          <stop offset=".5" stopColor="#5A1820" />
+          <stop offset=".6" stopColor="#E62429" />
+          <stop offset=".8" stopColor="#FF9F43" />
+          <stop offset="1" stopColor="#FFF0D6" />
         </linearGradient>
+        {/* reflexo de luz que corre pelo metal (vermelho → dourado) */}
+        <linearGradient id="tm1b" gradientUnits="userSpaceOnUse" x1="-120" y1="0" x2="0" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset=".5" stopColor="#FFE7B0" stopOpacity=".7" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <animateTransform attributeName="gradientTransform" type="translate" values="-60 0; 640 0; 640 0" keyTimes="0; .45; 1" dur="5.5s" repeatCount="indefinite" />
+        </linearGradient>
+        {/* dourado incandescente */}
         <linearGradient id="tm2" gradientUnits="userSpaceOnUse" x1="0" y1="136" x2="0" y2="174">
-          <stop offset="0" stopColor="#FFF3D6" />
-          <stop offset=".36" stopColor="#FFC76B" />
-          <stop offset=".5" stopColor="#B8410E" />
-          <stop offset=".64" stopColor="#FF8A3D" />
-          <stop offset="1" stopColor="#FFE1A8" />
+          <stop offset="0" stopColor="#FFFBEA" />
+          <stop offset=".3" stopColor="#FFE27A" />
+          <stop offset=".48" stopColor="#F5B700" />
+          <stop offset=".56" stopColor="#B05A00" />
+          <stop offset=".74" stopColor="#FFC93A" />
+          <stop offset="1" stopColor="#FFF4C4" />
         </linearGradient>
         <clipPath id="tclip">
           <text {...t1}>{nome}</text>
           <text {...t2}>{idade}</text>
         </clipPath>
         <filter id="tsombra" x="-10%" y="-20%" width="120%" height="150%">
-          <feDropShadow dx="0" dy="2.5" stdDeviation="0.6" floodColor="#000" floodOpacity=".75" />
-          <feDropShadow dx="0" dy="0" stdDeviation="9" floodColor="#7FB8FF" floodOpacity=".22" />
+          <feDropShadow dx="0" dy="2.5" stdDeviation="0.6" floodColor="#000" floodOpacity=".8" />
+          <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#FF6A00" floodOpacity=".35" />
         </filter>
       </defs>
       <g filter="url(#tsombra)">
-        <text {...t1} fill="url(#tm1)" stroke="#0B0F15" strokeWidth="1.2" paintOrder="stroke">
+        <text {...t1} fill="url(#tm1)" stroke="#12060A" strokeWidth="1.2" paintOrder="stroke">
           {nome}
         </text>
-        <text {...t2} fill="url(#tm2)" stroke="#1A0A04" strokeWidth="1" paintOrder="stroke">
+        <text {...t2} fill="url(#tm2)" stroke="#2A1200" strokeWidth="1" paintOrder="stroke">
           {idade}
         </text>
       </g>
@@ -168,10 +181,12 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
       </g>
       {/* clarão do metal quando o raio atinge */}
       <g ref={luz} opacity="0" clipPath="url(#tclip)">
-        <rect x="0" y="0" width="400" height="186" fill="#DCEBFF" />
+        <rect x="0" y="0" width="400" height="186" fill="#D6F4FF" />
       </g>
     </svg>
     <svg viewBox="0 0 400 186" className="titulo-arcos" aria-hidden="true" focusable="false">
+      {/* reflexo de luz que atravessa o metal (SVG sem filtro: não repinta o título) */}
+      {!perf.reducedMotion && !perf.isLite() && <rect x="0" y="20" width="400" height="160" fill="url(#tm1b)" clipPath="url(#tclip)" />}
       <g ref={dentro} fill="none" strokeLinecap="round" strokeLinejoin="round" />
       <g ref={fora} fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>

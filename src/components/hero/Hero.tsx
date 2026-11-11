@@ -69,7 +69,7 @@ export function Hero() {
   return (
     <section ref={section} id="inicio" aria-labelledby="t-inicio" className="hero wrap pb-16 pt-[max(28px,env(safe-area-inset-top))]">
       <div ref={caixa} className="hero-caixa text-center">
-        <motion.p custom={0.1} variants={surge} initial="hide" animate={anim} className="rotulo pl-[.42em]">
+        <motion.p custom={0.1} variants={surge} initial="hide" animate={anim} className="rotulo sombra-txt pl-[.38em] text-dourado">
           Uma nova missão
         </motion.p>
 
@@ -91,17 +91,17 @@ export function Hero() {
           </div>
         </h1>
 
-        <motion.p custom={1.25} variants={surge} initial="hide" animate={anim} className="rotulo rotulo-eletrico mt-6 pl-[.42em] text-[13px]">
+        <motion.p custom={1.25} variants={surge} initial="hide" animate={anim} className="rotulo sombra-txt mt-6 pl-[.38em] text-[13px] text-eletrico">
           {dataTrailer}
         </motion.p>
-        <motion.p custom={1.4} variants={surge} initial="hide" animate={anim} className="mt-2 text-[14px] font-medium tracking-[0.08em] txt-2">
+        <motion.p custom={1.4} variants={surge} initial="hide" animate={anim} className="sombra-txt mt-2 text-[14px] font-semibold tracking-[0.08em] text-branco">
           {convite.festa.local}
         </motion.p>
-        <motion.p custom={1.6} variants={surge} initial="hide" animate={anim} className="mx-auto mt-7 max-w-[26ch] text-[18px] font-medium leading-snug text-branco">
+        <motion.p custom={1.6} variants={surge} initial="hide" animate={anim} className="sombra-txt mx-auto mt-7 max-w-[26ch] text-[18px] font-medium leading-snug text-branco">
           {c.frase}
         </motion.p>
         <motion.div custom={2} variants={surge} initial="hide" animate={anim} className="mt-10" aria-hidden="true">
-          <span className="rotulo text-[10px]">Role</span>
+          <span className="rotulo sombra-txt text-[10px] text-branco">Role</span>
           <span className="role mt-3" />
         </motion.div>
       </div>

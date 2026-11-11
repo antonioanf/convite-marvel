@@ -4,11 +4,13 @@
  *  ?agora=2026-12-12T10:00     simula a data/hora atual (testar "É hoje!" e agradecimento)
  *  ?abrir=1                    pula a intro (útil para screenshots)
  *  ?teste=1                    expõe window.__convite para os testes automáticos
+ *  ?motor=2d                   força o fallback 2D dos poderes (sem WebGL)
  */
 const params = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams()
 
 export const debug = {
   modo: params.get('modo') as 'leve' | 'normal' | null,
+  motor: params.get('motor') as '2d' | null,
   abrir: params.get('abrir') === '1',
   teste: params.get('teste') === '1',
   offsetMs: (() => {

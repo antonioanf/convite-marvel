@@ -8,8 +8,10 @@ const start = new Date(f.dataHora)
 const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('pt-BR', { timeZone: tz, ...o }).format(start)
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-/** "16 · 05 · 2027" */
-export const dataCurta = fmt({ day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join(' · ')
+/** "26/11/2026" */
+export const dataCurtaBarra = fmt({ day: '2-digit', month: '2-digit', year: 'numeric' })
+/** "26 · 11 · 2026" */
+export const dataCurta = dataCurtaBarra.split('/').join(' · ')
 /** "Domingo" */
 export const diaSemana = cap(fmt({ weekday: 'long' }))
 /** "16 de maio" */

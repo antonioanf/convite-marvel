@@ -1,107 +1,85 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { convite } from '../../config/convite'
 import { useNow } from '../../hooks/useStores'
 import { Card } from '../ui/Card'
 import { SectionTitle } from '../ui/SectionTitle'
-import { ButterflyIcon } from '../ui/ButterflyIcon'
-import { field } from '../../lib/butterflyField'
-import { hora, partyPhase } from '../../lib/datas'
+import { horaCurta, partyPhase } from '../../lib/datas'
 import { indice } from '../../lib/secoes'
-import { useHolo } from '../../lib/holo'
+import { gerarRaio } from '../../lib/fx/raio'
 import { perf } from '../../lib/perf'
+import { acionar } from '../../poderes/acionar'
 
-export { partyPhase }
-
-/** Cartão que vira (flip) quando o valor muda. */
-function Flip({ value }: { value: string }) {
-  const [s, setS] = useState({ cur: value, prev: value, n: 0 })
-  if (value !== s.cur) setS({ cur: value, prev: s.cur, n: s.n + 1 })
-  return (
-    <div className="flip" aria-hidden="true">
-      <div className="flip-half flip-top">
-        <span>{s.cur}</span>
-      </div>
-      <div className="flip-half flip-bottom">
-        <span>{s.prev}</span>
-      </div>
-      {s.n > 0 && (
-        <>
-          <div key={`t${s.n}`} className="flip-half flip-top anim">
-            <span>{s.prev}</span>
-          </div>
-          <div key={`b${s.n}`} className="flip-half flip-bottom anim">
-            <span>{s.cur}</span>
-          </div>
-        </>
-      )}
-    </div>
-  )
+/** Um arco elétrico novo (SVG) cruzando o número a cada troca. */
+function arco() {
+  const r = gerarRaio({ x: 4, y: 20 + Math.random() * 20 }, { x: 96, y: 20 + Math.random() * 20 }, { niveis: 5, desvio: 0.3, galhos: 0.5 })
+  return r.galhos.map((g) => 'M' + g.pts.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('L')).join(' ')
 }
 
-function Unit({ value, label, digits = 2 }: { value: number; label: string; digits?: number }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-      <Flip value={String(value).padStart(digits, '0')} />
-      <span className="label text-[11px] tracking-[0.16em]">{label}</span>
-    </div>
-  )
-}
-
-function Today() {
-  const ref = useRef<HTMLDivElement>(null)
-  const title = useRef<HTMLParagraphElement>(null)
-  useHolo(title)
-  // efeito especial: revoadas periódicas de borboletas saindo do título
+/** Número em mono; quando muda, leva uma descarga elétrica (flash + arco). */
+function Unidade({ valor, rotulo, digitos = 2 }: { valor: number; rotulo: string; digitos?: number }) {
+  const txt = String(valor).padStart(digitos, '0')
+  const [n, setN] = useState(0)
+  const ant = useRef(txt)
   useEffect(() => {
-    const fire = () => {
-      const r = ref.current?.getBoundingClientRect()
-      if (r && r.top < innerHeight && r.bottom > 0) field.burst(r.left + r.width / 2, r.top + r.height / 3, perf.isLite() ? 2 : 4)
+    if (ant.current !== txt) {
+      ant.current = txt
+      setN((x) => x + 1)
     }
-    const id = setInterval(fire, 4500)
-    const first = setTimeout(fire, 600)
-    return () => {
-      clearInterval(id)
-      clearTimeout(first)
-    }
+  }, [txt])
+  const d = useMemo(() => (n && !perf.reducedMotion ? arco() : ''), [n])
+  return (
+    <div className="cont-un">
+      <span key={n} className={`cont-num mono ${n ? 'troca' : ''}`}>
+        {txt}
+      </span>
+      {d && (
+        <svg key={`a${n}`} viewBox="0 0 100 60" preserveAspectRatio="none" className="cont-arco on" aria-hidden="true">
+          <path d={d} fill="none" stroke="#1E90FF" strokeOpacity=".45" strokeWidth="6" strokeLinecap="round" />
+          <path d={d} fill="none" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
+          <path d={d} fill="none" stroke="#F2FEFF" strokeWidth=".8" strokeLinecap="round" />
+        </svg>
+      )}
+      <span className="rotulo text-[10px] tracking-[0.24em]">{rotulo}</span>
+    </div>
+  )
+}
+
+/** No dia: explosão de energia cósmica quando a seção aparece. */
+function Hoje() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let feito = false
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting || feito) return
+        feito = true
+        const r = el.getBoundingClientRect()
+        acionar.festa({ x: r.left + r.width / 2, y: r.top + r.height * 0.4 })
+      },
+      { threshold: 0.6 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
   }, [])
   return (
-    <div ref={ref} className="py-3 text-center">
-      <motion.p
-        ref={title}
-        data-holo
-        initial={perf.reducedMotion ? false : { scale: 0.6, opacity: 0, rotate: -6 }}
-        whileInView={{ scale: 1, opacity: 1, rotate: 0 }}
-        viewport={{ once: true }}
-        transition={{ type: 'spring', stiffness: 180, damping: 12 }}
-        className="holo-text serif text-[76px] leading-none"
-      >
-        É hoje!
-      </motion.p>
-      <div className="mt-2 flex justify-center gap-2" aria-hidden="true">
-        <ButterflyIcon size={30} speed={0.3} />
-        <ButterflyIcon size={22} speed={0.25} className="-mt-3" />
-        <ButterflyIcon size={30} speed={0.35} />
-      </div>
-      <p className="mt-3 text-[18px] font-semibold text-roxo">
-        {hora ? (
-          <>
-            Te esperamos às <span className="mono text-violeta-txt">{hora}</span> 🦋
-          </>
-        ) : (
-          <>Te esperamos! 🦋</>
-        )}
+    <div ref={ref} className="py-4 text-center">
+      <p className="display metal-ouro text-[84px]">É hoje</p>
+      <p className="mt-3 text-[18px] font-semibold text-branco">
+        A missão começa {horaCurta ? <>às <span className="mono text-dourado">{horaCurta.toUpperCase()}</span></> : 'hoje'}.
       </p>
+      <p className="mt-1 text-[15px] txt-2">Te espero na {convite.festa.local}.</p>
     </div>
   )
 }
 
-function Thanks() {
+function Depois() {
   return (
-    <div className="py-3 text-center">
-      <p className="serif text-[56px] leading-tight text-roxo">Obrigado!</p>
-      <p className="mx-auto mt-2 max-w-[28ch] text-[17px] leading-relaxed text-tinta-2">
-        A festa foi linda porque você fez parte dela. {convite.crianca.nome} agradece cada abraço e cada sorriso 💜
+    <div className="py-4 text-center">
+      <p className="display metal text-[60px]">Missão cumprida</p>
+      <p className="mx-auto mt-3 max-w-[30ch] text-[17px] leading-relaxed txt-2">
+        Obrigado por fazer parte da aventura. {convite.crianca.nome} agradece cada abraço e cada sorriso.
       </p>
     </div>
   )
@@ -109,47 +87,40 @@ function Thanks() {
 
 export function Countdown() {
   const nowMs = useNow(1000)
-  const phase = partyPhase(nowMs)
+  const fase = partyPhase(nowMs)
   const diff = Math.max(0, new Date(convite.festa.dataHora).getTime() - nowMs)
   const d = Math.floor(diff / 86_400_000)
   const h = Math.floor((diff / 3_600_000) % 24)
   const m = Math.floor((diff / 60_000) % 60)
-  const sec = Math.floor((diff / 1000) % 60)
+  const s = Math.floor((diff / 1000) % 60)
 
   return (
-    <section id="contagem" aria-labelledby="t-contagem" className="wrap pb-14">
-      <SectionTitle
-        id="t-contagem"
-        index={indice('contagem')}
-        kicker={phase === 'depois' ? 'Foi lindo' : 'Contagem regressiva'}
-        title={phase === 'antes' ? 'Falta pouco' : phase === 'hoje' ? 'Chegou o dia' : 'Que festa!'}
-      />
-      <Card blur className="reveal px-3.5 pb-5 pt-4">
-        {phase === 'antes' && (
+    <section id="contagem" aria-labelledby="t-contagem" className="wrap secao acc-azul">
+      <SectionTitle id="t-contagem" index={indice('contagem')} kicker={fase === 'depois' ? 'Fim da missão' : 'Contagem regressiva'} title={fase === 'antes' ? 'Falta pouco' : fase === 'hoje' ? 'Chegou o dia' : 'Valeu, agente'} />
+      <Card className="reveal">
+        {fase === 'antes' && (
           <>
-            <div className="mb-3 flex items-center justify-between px-1">
-              <span className="label text-[11px]">até a festa</span>
-              <span className="label flex items-center gap-1.5 text-[11px]" aria-hidden="true">
-                <span key={sec} className="live-dot" />
-                ao vivo
+            <div className="cartao-cab">
+              <span className="rotulo text-[11px] acc-txt">Até a missão</span>
+              <span className="rotulo ao-vivo text-[11px] text-ciano" aria-hidden="true">
+                Ao vivo
               </span>
             </div>
-            <div role="timer" className="flex gap-2">
-              <Unit value={d} label={d === 1 ? 'dia' : 'dias'} digits={d >= 100 ? 3 : 2} />
-              <Unit value={h} label="horas" />
-              <Unit value={m} label="min" />
-              <Unit value={sec} label="seg" />
+            <div className="p-3.5 pb-4">
+              <div role="timer" aria-hidden="true" className="cont-grade">
+                <Unidade valor={d} rotulo={d === 1 ? 'dia' : 'dias'} digitos={d >= 100 ? 3 : 2} />
+                <Unidade valor={h} rotulo="horas" />
+                <Unidade valor={m} rotulo="min" />
+                <Unidade valor={s} rotulo="seg" />
+              </div>
+              <p className="sr-only-live">
+                Faltam {d} dias, {h} horas e {m} minutos para a festa.
+              </p>
             </div>
-            <p className="sr-only-live">
-              Faltam {d} dias, {h} horas e {m} minutos para a festa.
-            </p>
-            {!convite.festa.horarioDefinido && (
-              <p className="mt-4 px-1 text-center text-[14px] font-medium text-tinta-2">Horário a confirmar 💜</p>
-            )}
           </>
         )}
-        {phase === 'hoje' && <Today />}
-        {phase === 'depois' && <Thanks />}
+        {fase === 'hoje' && <Hoje />}
+        {fase === 'depois' && <Depois />}
       </Card>
     </section>
   )
