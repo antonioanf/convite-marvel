@@ -80,7 +80,7 @@ function Brasas({ alvo }: { alvo: RefObject<HTMLElement | null> }) {
 export function Footer() {
   const ref = useRef<HTMLElement>(null)
   return (
-    <footer ref={ref} className="rodape acc-dourado pb-14 pt-10 text-center">
+    <footer ref={ref} className="rodape acc-dourado pb-[150px] pt-10 text-center">
       <Brasas alvo={ref} />
       <div className="wrap rodape-txt relative flex flex-col items-center">
         <Emblema size={54} id="rod" className="drop-shadow-[0_0_16px_rgb(245_183_0/.45)]" />

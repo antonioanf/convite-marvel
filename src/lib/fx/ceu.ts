@@ -1,8 +1,9 @@
 /**
- * Céu de entardecer épico, pintado UMA vez (imagem parada, em baixa resolução, esticada pelo CSS):
- * nuvens de tempestade iluminadas por baixo pelo sol baixo (laranja, vermelho e dourado), com rasgos
- * de céu azul e roxo no alto. A pintura roda num Worker (ceu.worker.ts) para não travar a abertura.
- * Função pura: recebe largura/altura e devolve os pixels RGBA.
+ * Céu do pôster (pintado UMA vez, em baixa resolução, esticado pelo CSS): tempestade dramática com
+ * uma explosão de luz atravessando as nuvens no centro-alto. As nuvens ficam escuras por dentro e
+ * acesas nas bordas viradas para a luz — dourado e laranja perto da explosão, azul elétrico longe
+ * dela. Embaixo, o céu escurece até o quase preto azulado do convite (#05070D).
+ * A pintura roda num Worker (ceu.worker.ts) para não travar a abertura. Função pura: devolve RGBA.
  */
 
 type C3 = [number, number, number]
@@ -43,98 +44,69 @@ const ss = (a: number, b: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
   return t * t * (3 - 2 * t)
 }
+const mix3 = (a: C3, b: C3, k: number): C3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]
 
-function rampa(stops: [number, C3][], v: number): C3 {
-  if (v <= stops[0][0]) return stops[0][1]
-  for (let i = 1; i < stops.length; i++) {
-    const [p1, c1] = stops[i]
-    if (v <= p1) {
-      const [p0, c0] = stops[i - 1]
-      const k = (v - p0) / (p1 - p0)
-      return [c0[0] + (c1[0] - c0[0]) * k, c0[1] + (c1[1] - c0[1]) * k, c0[2] + (c1[2] - c0[2]) * k]
-    }
-  }
-  return stops[stops.length - 1][1]
-}
+const ESCURO: C3 = [5, 7, 13] // #05070D
+const CEU_LONGE: C3 = [12, 16, 40] // azul de tempestade
+const CEU_ROXO: C3 = [34, 18, 62] // rasgos roxos nas laterais
+const NUVEM: C3 = [14, 15, 30] // corpo da nuvem na sombra
+const OURO: C3 = [255, 196, 96]
+const LARANJA: C3 = [255, 110, 30]
+const AZUL: C3 = [40, 120, 255]
+const BRANCO: C3 = [255, 246, 226]
 
-// céu limpo: azul-noite no alto → roxo → vinho → brasa → dourado no horizonte
-const CEU: [number, C3][] = [
-  [0, [12, 14, 52]],
-  [0.16, [26, 18, 80]],
-  [0.32, [52, 20, 88]],
-  [0.46, [78, 20, 64]],
-  [0.6, [104, 24, 40]],
-  [0.74, [146, 44, 22]],
-  [0.86, [214, 100, 26]],
-  [0.94, [246, 168, 52]],
-  [1, [255, 214, 128]],
-]
-// luz do sol batendo por baixo das nuvens, conforme a altura
-const LUZ: [number, C3][] = [
-  [0, [190, 50, 110]],
-  [0.3, [230, 40, 50]],
-  [0.5, [255, 90, 20]],
-  [0.7, [255, 150, 40]],
-  [0.86, [255, 200, 100]],
-  [1, [255, 230, 160]],
-]
-// corpo da nuvem (lado na sombra)
-const BASE: [number, C3][] = [
-  [0, [18, 16, 50]],
-  [0.4, [36, 14, 44]],
-  [0.75, [62, 20, 30]],
-  [1, [90, 34, 26]],
-]
-
-export function pintarCeu(w: number, h: number, seed = 7): Uint8ClampedArray {
+/** `fy` = altura da explosão de luz (0 = topo, 1 = base) */
+export function pintarCeu(w: number, h: number, seed = 7, fy = 0.28): Uint8ClampedArray {
   const px = new Uint8ClampedArray(w * h * 4)
   const sx = w / 2
-  const sy = h * 0.97 // o sol, baixo, atrás dos prédios
+  const sy = h * fy
   const asp = w / h
   for (let j = 0; j < h; j++) {
     const v = j / (h - 1)
-    const ceu = rampa(CEU, v)
-    const luz = rampa(LUZ, v)
-    const base = rampa(BASE, v)
     for (let i = 0; i < w; i++) {
       const u = i / (w - 1)
-      // coordenadas das nuvens: esticadas na horizontal (nuvens de tempestade largas)
-      const qx = u * 2.8 * asp * 1.6
-      const qy = v * 5.4
-      const wx = fbm(qx * 0.9 + 3.1, qy * 0.9, seed + 3, 3)
-      const wy = fbm(qx * 0.9 - 2.4, qy * 0.9 + 5.2, seed + 5, 3)
-      const d = fbm(qx + wx * 1.1, qy + wy * 0.8, seed)
-      // amostra deslocada em direção ao sol: se lá é menos denso, este ponto é a borda acesa
       let dx = sx - i
       let dy = sy - j
       const dist = Math.hypot(dx, dy) || 1
+      const dn = dist / h // distância normalizada à explosão
       dx /= dist
       dy /= dist
-      const passo = 0.07
-      const d2 = fbm(qx + wx * 1.1 + dx * passo * 2.8 * asp, qy + wy * 0.8 + dy * passo * 5.4, seed)
-      const aceso = Math.min(1, Math.max(0, (d - d2) * 7 + 0.08))
-      const perto = Math.exp(-dist / (h * 0.42)) // perto do sol = luz mais forte
-      // cobertura: céu fechado no meio, abrindo perto do horizonte (o brilho do sol aparece)
-      const cobre = (1 - ss(0.66, 0.9, v)) * (0.75 + 0.25 * ss(0, 0.2, v))
-      const dens = ss(0.44, 0.7, d) * cobre
-      // rasgos azuis e roxos no alto (onde a nuvem abre)
-      const rasgo = ss(0.5, 0.72, fbm(qx * 0.45 + 11, qy * 0.6, seed + 9, 3)) * (1 - ss(0.12, 0.5, v))
-      const azul: C3 = v < 0.25 ? [24, 70, 170] : [80, 44, 168]
-      const cr = ceu[0] + (azul[0] - ceu[0]) * rasgo * 0.75
-      const cg = ceu[1] + (azul[1] - ceu[1]) * rasgo * 0.75
-      const cb = ceu[2] + (azul[2] - ceu[2]) * rasgo * 0.75
-      // cor da nuvem: sombra + luz por baixo + franja brilhante na borda
-      // a luz forte fica na borda de baixo das nuvens e perto do horizonte; o meio da tela fica
-      // escuro o bastante para o texto (as cores aparecem como brilho, não como fundo chapado)
-      const k = (aceso * 0.95 + 0.06) * (0.2 + perto * 0.95)
-      const nr = base[0] + luz[0] * k
-      const ng = base[1] + luz[1] * k
-      const nb = base[2] + luz[2] * k
-      const franja = (ss(0.4, 0.47, d) - ss(0.47, 0.58, d)) * cobre * (0.25 + perto) * 0.55
+      // céu entre as nuvens: azul de tempestade, roxo nas laterais, brilho quente perto da luz
+      const lateral = ss(0.25, 0.5, Math.abs(u - 0.5))
+      let ceu = mix3(CEU_LONGE, CEU_ROXO, lateral * 0.7)
+      const brilho = Math.exp(-dn / 0.2)
+      ceu = mix3(ceu, OURO, brilho * 0.85)
+      ceu = mix3(ceu, BRANCO, Math.exp(-dn / 0.06) * 0.9)
+
+      // nuvens de tempestade (esticadas na horizontal), com a amostra deslocada para a luz:
+      // se lá é menos denso, este ponto é a borda acesa
+      const qx = u * 2.6 * asp * 1.7
+      const qy = v * 4.8
+      const wx = fbm(qx * 0.9 + 3.1, qy * 0.9, seed + 3, 3)
+      const wy = fbm(qx * 0.9 - 2.4, qy * 0.9 + 5.2, seed + 5, 3)
+      const d = fbm(qx + wx * 1.1, qy + wy * 0.8, seed)
+      const d2 = fbm(qx + wx * 1.1 + dx * 0.18 * asp, qy + wy * 0.8 + dy * 0.34, seed)
+      const aceso = Math.min(1, Math.max(0, (d - d2) * 7 + 0.05))
+      // as nuvens abrem em volta da explosão (o buraco por onde a luz passa)
+      const buraco = ss(0.05, 0.22, dn)
+      const dens = ss(0.42, 0.66, d) * buraco
+      // borda acesa: dourado/laranja perto da luz, azul elétrico longe dela
+      const perto = Math.exp(-dn / 0.32)
+      const cor = mix3(AZUL, mix3(LARANJA, OURO, ss(0.4, 0.85, perto)), ss(0.15, 0.55, perto))
+      const forca = aceso * (0.18 + perto * 0.95)
+      const franja = (ss(0.38, 0.45, d) - ss(0.45, 0.56, d)) * buraco * (0.15 + perto * 0.8)
+      let r = ceu[0] + (NUVEM[0] + cor[0] * forca - ceu[0]) * dens + cor[0] * franja * 0.55
+      let g = ceu[1] + (NUVEM[1] + cor[1] * forca - ceu[1]) * dens + cor[1] * franja * 0.55
+      let b = ceu[2] + (NUVEM[2] + cor[2] * forca - ceu[2]) * dens + cor[2] * franja * 0.55
+      // embaixo: escurece até o fundo do convite
+      const desce = ss(0.55, 0.95, v)
+      r += (ESCURO[0] - r) * desce
+      g += (ESCURO[1] - g) * desce
+      b += (ESCURO[2] - b) * desce
       const o = (j * w + i) * 4
-      px[o] = cr + (nr - cr) * dens + luz[0] * franja
-      px[o + 1] = cg + (ng - cg) * dens + luz[1] * franja
-      px[o + 2] = cb + (nb - cb) * dens + luz[2] * franja
+      px[o] = r
+      px[o + 1] = g
+      px[o + 2] = b
       px[o + 3] = 255
     }
   }

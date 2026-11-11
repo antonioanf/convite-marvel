@@ -1,7 +1,9 @@
 /**
- * Atmosfera do fundo (canvas 2D, resolução 1x — é fundo): brasas subindo e poeira flutuando em
- * profundidade (as de perto maiores e desfocadas, como bokeh), mais relâmpagos distantes de vez em quando.
+ * Atmosfera do pôster do hero (canvas 2D, resolução 1x — é fundo): brasas e poeira nascem ENTRE AS
+ * ROCHAS (faixa de baixo do pôster) e sobem, sumindo antes de chegar ao título — nenhuma partícula
+ * passa por cima de texto. Relâmpagos distantes de vez em quando no céu (metade de cima).
  * As brasas mudam de cor ao esfriar (amarelo → laranja → vermelho escuro).
+ * O laço para com o pôster fora da tela, com a aba em segundo plano ou com um poder ativo.
  */
 import { perf } from '../perf'
 import { sfx } from '../sfx'
@@ -32,18 +34,22 @@ function sprite(stops: [number, string][], tam = 64) {
   return c
 }
 
-export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) {
+/** `faixa` = altura (px) da faixa das rochas, no pé do canvas, onde as partículas nascem. */
+export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement, faixa = 130) {
   const ctx = canvas.getContext('2d')!
   let W = 0
   let H = 0
   const resize = () => {
-    W = innerWidth
-    H = innerHeight
+    W = canvas.clientWidth || innerWidth
+    H = canvas.clientHeight || innerHeight
     canvas.width = W
     canvas.height = H
   }
   resize()
-  addEventListener('resize', resize, { passive: true })
+  const ro = new ResizeObserver(resize)
+  ro.observe(canvas)
+  // as partículas sobem no máximo até aqui (acima das rochas) e já chegam apagadas
+  const teto = () => H - faixa - 150
 
   // brasas: quente (amarelo-branco), média (laranja), fria (vermelho escuro); poeira: dourada (luz do
   // entardecer); bokeh: disco macio dourado ou rosado (luz desfocada perto da "câmera")
@@ -57,7 +63,8 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
     const z = Math.random()
     return {
       x: Math.random() * W,
-      y: brasa ? (inicio ? H * (0.4 + Math.random() * 0.6) : H + 20) : Math.random() * H,
+      // nascem entre as rochas
+      y: H - Math.random() * faixa * (brasa && !inicio ? 0.5 : 1),
       z,
       vx: (Math.random() - 0.5) * 10,
       vy: brasa ? -(18 + z * 40 + Math.random() * 20) : -(2 + Math.random() * 5),
@@ -68,7 +75,7 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
     }
   }
   // modo leve: menos brasas e menos poeira (as de longe somem primeiro)
-  const quantos = () => (perf.isLite() ? { brasas: 6, poeira: 8 } : { brasas: 18, poeira: 30 })
+  const quantos = () => (perf.isLite() ? { brasas: 6, poeira: 6 } : { brasas: 16, poeira: 18 })
   const ps: P[] = []
   const ajustar = () => {
     const q = quantos()
@@ -117,25 +124,26 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
       p.x += (p.vx + Math.sin(t * 0.7 + p.seed) * (p.brasa ? 14 : 6)) * dt
       p.y += p.vy * dt
       if (p.brasa) {
-        if (p.vida > p.max || p.y < -20) Object.assign(p, nova(true))
+        if (p.vida > p.max || p.y < teto()) Object.assign(p, nova(true))
         const k = p.vida / p.max
+        const sobe = Math.min(1, Math.max(0, (p.y - teto()) / 150)) // apaga ao subir acima das rochas
         const flick = 0.75 + 0.25 * Math.sin(t * 13 + p.seed * 7)
         const tam = (1.5 + p.z * 3.2) * (1 - k * 0.4)
         const s = tam * 3.2
-        ctx.globalAlpha = Math.max(0, Math.min(1, (1 - k) * 1.4) * flick * (0.35 + p.z * 0.65))
+        ctx.globalAlpha = Math.max(0, Math.min(1, (1 - k) * 1.4) * flick * (0.35 + p.z * 0.65) * sobe)
         ctx.drawImage(k < 0.35 ? quente : k < 0.7 ? media : fria, p.x - s, p.y - s, s * 2, s * 2)
       } else {
-        if (p.y < -30) p.y = H + 30
+        if (p.y < teto()) p.y = H + 10
         if (p.x < -30) p.x = W + 30
         if (p.x > W + 30) p.x = -30
         if (p.z > 0.82) {
           // muito perto da "câmera": disco grande e desfocado (bokeh)
           const s = 10 + p.z * 16
-          ctx.globalAlpha = 0.18 + 0.12 * Math.sin(t * 0.5 + p.seed)
+          ctx.globalAlpha = (0.18 + 0.12 * Math.sin(t * 0.5 + p.seed)) * Math.min(1, Math.max(0, (p.y - teto()) / 150))
           ctx.drawImage(bokeh, p.x - s, p.y - s, s * 2, s * 2)
         } else {
           const s = 1 + p.z * 2.4
-          ctx.globalAlpha = 0.2 + p.z * 0.35
+          ctx.globalAlpha = (0.2 + p.z * 0.35) * Math.min(1, Math.max(0, (p.y - teto()) / 150))
           ctx.drawImage(poeira, p.x - s * 2, p.y - s * 2, s * 4, s * 4)
         }
       }
@@ -149,7 +157,7 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
   const relampago = () => {
     if (!ativo || document.hidden) return agenda()
     const x0 = W * (0.1 + Math.random() * 0.8)
-    raio = { r: gerarRaio({ x: x0, y: -10 }, { x: x0 + (Math.random() - 0.5) * W * 0.5, y: H * (0.25 + Math.random() * 0.2) }, { niveis: 8, galhos: 1.4 }), t0: performance.now() / 1000 }
+    raio = { r: gerarRaio({ x: x0, y: -10 }, { x: x0 + (Math.random() - 0.5) * W * 0.5, y: H * (0.18 + Math.random() * 0.14) }, { niveis: 8, galhos: 1.4 }), t0: performance.now() / 1000 }
     if (podeClarear()) {
       flash.animate(
         [{ opacity: 0 }, { opacity: CLARAO_MAX * 0.4, offset: 0.1 }, { opacity: CLARAO_MAX * 0.1, offset: 0.3 }, { opacity: CLARAO_MAX * 0.3, offset: 0.42 }, { opacity: 0 }],
@@ -171,11 +179,17 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
     raf = requestAnimationFrame(frame)
     timer = window.setTimeout(relampago, 4000)
   }
-  // pausa enquanto um poder está ativo ou a aba está em segundo plano
+  // pausa enquanto um poder está ativo, com a aba em segundo plano ou com o pôster fora da tela
   let porPoder = false
   let porAba = false
+  let porTela = false
+  const io = new IntersectionObserver(([e]) => {
+    porTela = !e.isIntersecting
+    aplicar()
+  })
+  io.observe(canvas)
   const aplicar = () => {
-    const p = porPoder || porAba
+    const p = porPoder || porAba || porTela
     ativo = !p
     cancelAnimationFrame(raf)
     if (!p && !perf.reducedMotion) {
@@ -196,7 +210,8 @@ export function iniciarAtmosfera(canvas: HTMLCanvasElement, flash: HTMLElement) 
       ativo = false
       cancelAnimationFrame(raf)
       clearTimeout(timer)
-      removeEventListener('resize', resize)
+      ro.disconnect()
+      io.disconnect()
       offLite()
       offFundo()
     },

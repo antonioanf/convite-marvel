@@ -9,6 +9,7 @@ import { fx2d } from '../../lib/fx/camada2d'
 import { sfx } from '../../lib/sfx'
 import { vibrate } from '../../lib/haptics'
 import { Selo } from './Selo'
+import { Poster } from './Poster'
 import { TituloEletrico, type TituloHandle } from './TituloEletrico'
 
 const ease = [0.2, 0.8, 0.2, 1] as const
@@ -36,6 +37,9 @@ export function Hero() {
     if (!opened || perf.reducedMotion) return
     const id = setTimeout(() => {
       const r = titulo.current?.svg()?.getBoundingClientRect()
+      // o raio que acende o título vem para a frente só neste instante (fora disso, efeitos ficam atrás do texto)
+      document.documentElement.classList.add('fx-frente')
+      setTimeout(() => document.documentElement.classList.remove('fx-frente'), 1100)
       if (r) {
         const alvo = { x: r.left + r.width * (0.35 + Math.random() * 0.3), y: r.top + r.height * 0.18 }
         fx2d.raio({ x: alvo.x + (Math.random() - 0.5) * 140, y: -20 }, alvo, { lw: 3.6, galhos: 1.4 })
@@ -67,42 +71,49 @@ export function Hero() {
   }, [opened])
 
   return (
-    <section ref={section} id="inicio" aria-labelledby="t-inicio" className="hero wrap pb-16 pt-[max(28px,env(safe-area-inset-top))]">
-      <div ref={caixa} className="hero-caixa text-center">
-        <motion.p custom={0.1} variants={surge} initial="hide" animate={anim} className="rotulo sombra-txt pl-[.38em] text-dourado">
-          Uma nova missão
-        </motion.p>
+    <section ref={section} id="inicio" aria-labelledby="t-inicio" className="hero">
+      <div className="hero-palco">
+        {/* pôster: céu com explosão de luz, contraluz, rochas e brasas (atrás, rola junto) */}
+        <Poster />
+        <div ref={caixa} className="hero-caixa wrap text-center pt-[max(20px,env(safe-area-inset-top))]">
+          <motion.p custom={0.1} variants={surge} initial="hide" animate={anim} className="rotulo titulo-ceu text-dourado">
+            Uma nova missão
+          </motion.p>
 
-        <motion.div
-          initial={perf.reducedMotion ? false : { opacity: 0, scale: 0.86 }}
-          animate={opened ? { opacity: 1, scale: 1 } : undefined}
-          transition={{ delay: 0.15, duration: 1.4, ease }}
-          className="mt-7"
-        >
-          <Selo />
-        </motion.div>
+          <motion.div
+            initial={perf.reducedMotion ? false : { opacity: 0, scale: 0.86 }}
+            animate={opened ? { opacity: 1, scale: 1 } : undefined}
+            transition={{ delay: 0.15, duration: 1.4, ease }}
+            className="mt-5"
+          >
+            <Selo />
+          </motion.div>
 
-        <h1 id="t-inicio" className="relative mt-7">
-          <span className="sr-only">
-            {c.nome} · {c.idade} anos
-          </span>
-          <div ref={undefined} style={{ opacity: aceso ? 1 : 0, transition: 'opacity .08s' }}>
-            <TituloEletrico ref={titulo} nome={c.nome.toLocaleUpperCase('pt-BR')} idade={`${c.idade} ANOS`} ativo={aceso && visivel} />
-          </div>
-        </h1>
+          <h1 id="t-inicio" className="titulo-ceu relative mt-5">
+            <span className="sr-only">
+              {c.nome} · {c.idade} anos
+            </span>
+            <div style={{ opacity: aceso ? 1 : 0, transition: 'opacity .08s' }}>
+              <TituloEletrico ref={titulo} nome={c.nome.toLocaleUpperCase('pt-BR')} idade={`${c.idade} ANOS`} ativo={aceso && visivel} />
+            </div>
+          </h1>
+        </div>
+      </div>
 
-        <motion.p custom={1.25} variants={surge} initial="hide" animate={anim} className="rotulo sombra-txt mt-6 pl-[.38em] text-[13px] text-eletrico">
+      {/* informações sobre a faixa escura e calma, abaixo das rochas */}
+      <div className="hero-info wrap text-center">
+        <motion.p custom={1.25} variants={surge} initial="hide" animate={anim} className="rotulo pl-[.38em] text-[13px] text-eletrico">
           {dataTrailer}
         </motion.p>
-        <motion.p custom={1.4} variants={surge} initial="hide" animate={anim} className="sombra-txt mt-2 text-[14px] font-semibold tracking-[0.08em] text-branco">
+        <motion.p custom={1.4} variants={surge} initial="hide" animate={anim} className="mt-2 text-[15px] font-semibold tracking-[0.06em] text-branco">
           {convite.festa.local}
         </motion.p>
-        <motion.p custom={1.6} variants={surge} initial="hide" animate={anim} className="sombra-txt mx-auto mt-7 max-w-[26ch] text-[18px] font-medium leading-snug text-branco">
+        <motion.p custom={1.6} variants={surge} initial="hide" animate={anim} className="mx-auto mt-4 max-w-[28ch] text-[17px] font-medium leading-snug text-branco">
           {c.frase}
         </motion.p>
-        <motion.div custom={2} variants={surge} initial="hide" animate={anim} className="mt-10" aria-hidden="true">
-          <span className="rotulo sombra-txt text-[10px] text-branco">Role</span>
-          <span className="role mt-3" />
+        <motion.div custom={2} variants={surge} initial="hide" animate={anim} className="mt-5" aria-hidden="true">
+          <span className="rotulo text-[10px] text-branco">Role</span>
+          <span className="role mt-2" />
         </motion.div>
       </div>
     </section>

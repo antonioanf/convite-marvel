@@ -4,7 +4,7 @@ Convite de aniversário em formato de site (uma página), feito para ser aberto 
 Clima de filme de super-herói: realista e adulto, mas colorido e cheio de energia.
 
 - **Abertura:** noite de tempestade, chuva e o emblema JL de aço. No toque, um raio atinge o emblema, o metal fica em brasa e a luz revela o convite já colorido.
-- **Hero:** céu de entardecer épico (nuvens de tempestade acesas por baixo em laranja, vermelho e dourado, rasgos de céu azul e roxo, raios de sol), "JOÃO LUCAS" em metal com reflexos vermelho e dourado, "5 ANOS" em dourado incandescente e eletricidade azul/ciano correndo pelas letras.
+- **Hero como pôster de cinema:** no topo, céu de tempestade com uma explosão de luz atravessando as nuvens (raios volumétricos, nuvens acesas em dourado, laranja e azul nas bordas); no meio, o emblema e "JOÃO LUCAS" / "5 ANOS" em contraluz; na base, rochas escuras com brasas e poeira subindo entre elas; embaixo, degradê até o quase preto azulado `#05070D`, onde ficam data, local e frase.
 - **6 poderes com gestos** (WebGL com bloom; fallback em canvas 2D), seção PODERES com mão-fantasma, medidor e SOBRECARGA.
 - Contagem regressiva, A missão (data decodificada pela rajada, local, mapa, agenda), Aceitar missão (credencial em PNG + WhatsApp) e rodapé com brasas.
 
@@ -51,7 +51,11 @@ Fica em `convite.paleta`. O fundo escuro é só a base para as cores de luz bril
 | `fogo` | `#FF6A00` | nuvens acesas, Rajada |
 | `branco` | `#FFF6EC` | texto (branco quente) |
 
-Os tons de **texto** das cores escuras demais para letra pequena (vermelho, roxo) são clareados em `src/config/tema.ts` (`text-vermelho-txt`, `text-roxo-txt`). Todo texto que fica sobre o céu tem uma base escura macia atrás; `node scripts/contraste.mjs` mede o pior caso de cada um (com o texto no alto, no meio e embaixo da tela) e confere o AA.
+Os tons de **texto** das cores escuras demais para letra pequena (vermelho, roxo) são clareados em `src/config/tema.ts` (`text-vermelho-txt`, `text-roxo-txt`).
+
+**Legibilidade.** As cores vibrantes ficam na luz e nos efeitos, não atrás do texto: fora do pôster do hero o fundo é escuro e calmo (`#05070D`). Cartões com fundo escuro 90% opaco, borda luminosa fina e sombra (sem `backdrop-filter`). Títulos e rótulos sobre o céu têm sombra forte e um degradê escuro localizado. Os canvas de efeitos (faíscas do dedo, clarões) ficam **atrás** do conteúdo e só vêm para a frente durante um poder ativo; as brasas do hero e do rodapé nascem abaixo do texto e apagam antes de chegar nele.
+
+`node scripts/contraste.mjs [--aparelho=360x740]` mede **todo** texto (hero, títulos, cartões, rodapé) contra o **pior pixel** do fundo — com as animações rodando e o texto no alto, no meio e embaixo da tela. Mínimo 4,5:1 (texto normal) e 3:1 (título grande). Resultado atual: 41 de 41 no iPhone 13 e no 360x740 (antes da reforma: 11 e 12 abaixo do mínimo).
 
 ## 4. Os poderes
 
@@ -88,7 +92,8 @@ Funcionam no convite inteiro, menos sobre campos de texto, botões e links. Arra
 ```bash
 npx playwright install chromium        # só na primeira vez
 node scripts/ver.mjs                   # prints da abertura, hero e seções → screenshots/ver/
-node scripts/contraste.mjs             # contraste AA dos textos sobre o céu
+node scripts/contraste.mjs [--aparelho=360x740]   # contraste de todo texto contra o pior pixel do fundo
+node scripts/comparar.mjs <rótulo>      # prints do hero e das seções no iPhone 13 e no 360x740 → screenshots/<rótulo>/
 node scripts/quadros.mjs [--gestos] [--2d] [poder]   # cada poder quadro a quadro → screenshots/quadros/
 node scripts/folha.mjs                 # junta os quadros de cada poder numa folha (_folha-<poder>.png)
 node scripts/diag-motor.mjs [--gpu] [--2d]          # tempo de quadro de cada poder
@@ -122,7 +127,8 @@ src/config/convite.ts      ← TODO o conteúdo
 src/config/tema.ts         paleta → variáveis CSS (+ tons de texto AA)
 src/intro/intro.ts         chuva, relâmpagos e o raio que abre o convite
 src/components/
-  cena/Cena.tsx            céu de entardecer (lib/fx/ceu.ts, pintado num Worker), raios de sol, cidade, atmosfera
+  cena/Cena.tsx            fundo fixo escuro e calmo (#05070D)
+  hero/Poster.tsx          pôster do hero: céu (lib/fx/ceu.ts, pintado num Worker), explosão de luz, contraluz, rochas (lib/fx/rochas.ts), brasas
   hero/                    Hero, Selo (emblema de metal), TituloEletrico
   sections/                Countdown, Missao, Poderes, Rsvp (credencial), Pix, Footer
 src/poderes/               gestos, acionar, motor (chunk), sim, gl/, render2d, cartoes, catalogo, estado

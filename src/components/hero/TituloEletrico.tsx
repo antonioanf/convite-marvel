@@ -146,7 +146,7 @@ export const TituloEletrico = forwardRef<TituloHandle, { nome: string; idade: st
           <stop offset="0" stopColor="#FFF8EC" />
           <stop offset=".2" stopColor="#FFDCA0" />
           <stop offset=".4" stopColor="#E3E6EC" />
-          <stop offset=".5" stopColor="#5A1820" />
+          <stop offset=".5" stopColor="#C2343C" />
           <stop offset=".6" stopColor="#E62429" />
           <stop offset=".8" stopColor="#FF9F43" />
           <stop offset="1" stopColor="#FFF0D6" />

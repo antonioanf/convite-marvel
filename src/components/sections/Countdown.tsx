@@ -11,7 +11,7 @@ import { acionar } from '../../poderes/acionar'
 
 /** Um arco elétrico novo (SVG) cruzando o número a cada troca. */
 function arco() {
-  const r = gerarRaio({ x: 4, y: 20 + Math.random() * 20 }, { x: 96, y: 20 + Math.random() * 20 }, { niveis: 5, desvio: 0.3, galhos: 0.5 })
+  const r = gerarRaio({ x: 2, y: 7 }, { x: 98, y: 7 }, { niveis: 5, desvio: 0.06, galhos: 0.2 })
   return r.galhos.map((g) => 'M' + g.pts.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('L')).join(' ')
 }
 
@@ -33,8 +33,8 @@ function Unidade({ valor, rotulo, digitos = 2 }: { valor: number; rotulo: string
         {txt}
       </span>
       {d && (
-        <svg key={`a${n}`} viewBox="0 0 100 60" preserveAspectRatio="none" className="cont-arco on" aria-hidden="true">
-          <path d={d} fill="none" stroke="#1E90FF" strokeOpacity=".45" strokeWidth="6" strokeLinecap="round" />
+        <svg key={`a${n}`} viewBox="0 0 100 14" preserveAspectRatio="none" className="cont-arco on" aria-hidden="true">
+          <path d={d} fill="none" stroke="#1E90FF" strokeOpacity=".45" strokeWidth="4" strokeLinecap="round" />
           <path d={d} fill="none" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
           <path d={d} fill="none" stroke="#F2FEFF" strokeWidth=".8" strokeLinecap="round" />
         </svg>
